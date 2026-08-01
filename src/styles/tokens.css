@@ -1,0 +1,116 @@
+/**
+ * Astroid design tokens — the single source of truth for color.
+ *
+ * Values are stored as space-separated RGB channels so Tailwind can apply opacity
+ * modifiers via `rgb(var(--token) / <alpha-value>)`. Theme switching swaps the
+ * channel values only; every component reads through the semantic token.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Foundation palette (90% of the interface) */
+  --background-primary: 246 242 234; /* #F6F2EA */
+  --background-secondary: 239 233 221; /* #EFE9DD */
+  --surface-primary: 255 253 248; /* #FFFDF8 */
+  --surface-secondary: 232 224 210; /* #E8E0D2 */
+  --text-primary: 23 20 18; /* #171412 */
+  --text-secondary: 90 84 79; /* #5A544F */
+  --text-muted: 138 131 123; /* #8A837B */
+  --border: 216 204 188; /* #D8CCBC */
+  --border-strong: 201 187 166; /* #C9BBA6 */
+
+  /* Signature accent — Astroid Gold */
+  --gold: 200 154 43; /* #C89A2B */
+  --gold-soft: 243 231 198; /* #F3E7C6 */
+  --gold-strong: 166 126 30; /* #A67E1E */
+  --gold-foreground: 23 20 18; /* text on gold */
+
+  /* Functional colors */
+  --success: 47 143 99; /* #2F8F63 */
+  --success-soft: 220 238 228;
+  --warning: 217 138 33; /* #D98A21 */
+  --warning-soft: 246 231 204;
+  --danger: 200 71 71; /* #C84747 */
+  --danger-soft: 243 218 216;
+  --info: 43 127 255; /* #2B7FFF */
+  --info-soft: 217 231 255;
+
+  /* Focus ring — deep gold, AA-visible against light surfaces */
+  --ring: 138 106 23; /* #8A6A17 */
+  --shadow-color: 23 20 18;
+
+  /* Chart palette — validated (dataviz skill) against surface #FFFDF8 */
+  --chart-surface: 255 253 248;
+  --chart-1: 42 120 214; /* #2a78d6 blue */
+  --chart-2: 235 104 52; /* #eb6834 orange */
+  --chart-3: 27 175 122; /* #1baf7a aqua */
+  --chart-4: 237 161 0; /* #eda100 yellow */
+  --chart-5: 232 123 164; /* #e87ba4 magenta */
+  --chart-6: 0 131 0; /* #008300 green */
+  --chart-7: 74 58 167; /* #4a3aa7 violet */
+  --chart-8: 227 73 72; /* #e34948 red */
+  --chart-grid: 231 223 209; /* hairline */
+  --chart-axis: 201 187 166;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background-primary: 18 16 13; /* #12100D */
+  --background-secondary: 13 11 9; /* #0D0B09 */
+  --surface-primary: 26 22 19; /* #1A1613 */
+  --surface-secondary: 36 31 26; /* #241F1A */
+  --text-primary: 246 242 234; /* #F6F2EA */
+  --text-secondary: 179 169 155; /* #B3A99B */
+  --text-muted: 138 129 117; /* #8A8175 */
+  --border: 51 44 37; /* #332C25 */
+  --border-strong: 71 62 52; /* #473E34 */
+
+  --gold: 221 178 85; /* brighter on dark */
+  --gold-soft: 46 38 23;
+  --gold-strong: 240 206 122;
+  --gold-foreground: 23 20 18;
+
+  --success: 63 169 120;
+  --success-soft: 22 39 31;
+  --warning: 227 154 58;
+  --warning-soft: 44 35 18;
+  --danger: 224 106 106;
+  --danger-soft: 46 27 27;
+  --info: 76 147 255;
+  --info-soft: 20 32 58;
+
+  --ring: 240 206 122;
+  --shadow-color: 0 0 0;
+
+  /* Chart palette — validated against dark surface #1A1613 */
+  --chart-surface: 26 22 19;
+  --chart-1: 57 135 229; /* #3987e5 */
+  --chart-2: 217 89 38; /* #d95926 */
+  --chart-3: 25 158 112; /* #199e70 */
+  --chart-4: 201 133 0; /* #c98500 */
+  --chart-5: 213 81 129; /* #d55181 */
+  --chart-6: 0 131 0; /* #008300 */
+  --chart-7: 144 133 233; /* #9085e9 */
+  --chart-8: 230 103 103; /* #e66767 */
+  --chart-grid: 44 44 42;
+  --chart-axis: 56 56 53;
+}
+
+/* High-contrast mode — strengthen ink and borders (AAA-leaning) */
+[data-contrast='high'] {
+  --text-secondary: 44 40 36;
+  --text-muted: 74 68 62;
+  --border: 150 134 112;
+  --border-strong: 120 104 84;
+  --ring: 92 68 8;
+}
+
+[data-theme='dark'][data-contrast='high'] {
+  --text-secondary: 232 226 216;
+  --text-muted: 196 188 176;
+  --border: 96 86 74;
+  --border-strong: 128 116 100;
+  --ring: 255 232 168;
+}

@@ -1,0 +1,122 @@
+'use client';
+
+import Link from 'next/link';
+import { ArrowLeft, Bot } from 'lucide-react';
+import { PageHeader } from '@/components/dashboard/page-header';
+import { QueryBoundary } from '@/components/dashboard/query-boundary';
+import { KeyValue, SectionLabel } from '@/components/dashboard/stat-card';
+import { RiskBadge } from '@/components/dashboard/risk-badge';
+import { DataTable, type Column } from '@/components/dashboard/data-table';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useWallet } from '@/hooks/use-queries';
+import { walletStatus } from '@/lib/status';
+import { formatCurrency, formatNumber, formatDateTime, truncateHash } from '@/lib/format';
+import type { AssetBalance } from '@/types/domain';
+
+const balanceColumns: Column<AssetBalance>[] = [
+  { header: 'Asset', cell: (b) => <span className="font-medium">{b.asset}</span> },
+  {
+    header: 'Balance',
+    align: 'right',
+    cell: (b) => <span className="tabular">{formatNumber(b.balance)}</span>,
+  },
+  {
+    header: 'USD value',
+    align: 'right',
+    cell: (b) => (
+      <span className="tabular">{formatCurrency(b.usdValue, 'USDC')}</span>
+    ),
+  },
+];
+
+export default function WalletDetailPage({ params }: { params: { id: string } }) {
+  const wallet = useWallet(params.id);
+
+  return (
+    <div className="space-y-8">
+      <Link
+        href="/wallets"
+        className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to wallets
+      </Link>
+
+      <QueryBoundary
+        query={wallet}
+        loading={
+          <div className="space-y-6">
+            <div className="skeleton h-24 w-full rounded-card" />
+            <div className="skeleton h-64 w-full rounded-card" />
+          </div>
+        }
+      >
+        {(data) => {
+          const status = walletStatus(data.status);
+          return (
+            <div className="space-y-8">
+              <PageHeader
+                eyebrow={data.walletType}
+                title={data.name}
+                description={truncateHash(data.stellarAddress, 6, 6)}
+                actions={
+                  <div className="flex items-center gap-2">
+                    <Badge variant={status.variant} dot>
+                      {status.label}
+                    </Badge>
+                    <RiskBadge score={data.riskScore} showScore />
+                  </div>
+                }
+              />
+
+              <Card className="p-5">
+                <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                  <KeyValue label="Network">
+                    <Badge
+                      variant={data.network === 'public' ? 'success' : 'warning'}
+                      size="sm"
+                    >
+                      {data.network}
+                    </Badge>
+                  </KeyValue>
+                  <KeyValue label="Type">
+                    <span className="capitalize">{data.walletType}</span>
+                  </KeyValue>
+                  <KeyValue label="Stellar address" mono>
+                    {truncateHash(data.stellarAddress, 6, 6)}
+                  </KeyValue>
+                  <KeyValue label="Total value">
+                    {formatCurrency(data.totalUsdValue, 'USDC')}
+                  </KeyValue>
+                  <KeyValue label="Risk">
+                    <RiskBadge score={data.riskScore} showScore />
+                  </KeyValue>
+                  <KeyValue label="Created">{formatDateTime(data.createdAt)}</KeyValue>
+                  {data.agentId && (
+                    <KeyValue label="Controlled by">
+                      <Link
+                        href={`/agents/${data.agentId}`}
+                        className="inline-flex items-center gap-1 text-gold-strong hover:underline"
+                      >
+                        <Bot className="h-3.5 w-3.5" aria-hidden /> View agent
+                      </Link>
+                    </KeyValue>
+                  )}
+                </dl>
+              </Card>
+
+              <div className="space-y-4">
+                <SectionLabel>Balances</SectionLabel>
+                <DataTable<AssetBalance>
+                  columns={balanceColumns}
+                  rows={data.balances}
+                  rowKey={(b) => b.asset}
+                />
+              </div>
+            </div>
+          );
+        }}
+      </QueryBoundary>
+    </div>
+  );
+}

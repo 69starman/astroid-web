@@ -1,0 +1,55 @@
+import type { Metadata, Viewport } from 'next';
+import { fontVariables } from '@/lib/fonts';
+import { AppProviders } from '@/providers';
+import '@/styles/globals.css';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Astroid — Financial Operating System for AI Agents',
+    template: '%s · Astroid',
+  },
+  description:
+    'Astroid is the financial operating system for autonomous AI agents on Stellar — wallets, policies, budgets, approvals and a financial memory that reconstructs why every payment happened.',
+  applicationName: 'Astroid',
+  keywords: [
+    'Astroid',
+    'Stellar',
+    'AI agents',
+    'agentic payments',
+    'treasury',
+    'financial operating system',
+  ],
+  authors: [{ name: 'Astroid' }],
+  metadataBase: new URL('https://astroid.finance'),
+  openGraph: {
+    title: 'Astroid — Financial Operating System for AI Agents',
+    description:
+      'Give autonomous agents a wallet, a budget, and a conscience. Governed spend on Stellar with a financial memory of every decision.',
+    type: 'website',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F6F2EA' },
+    { media: '(prefers-color-scheme: dark)', color: '#12100D' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+        <a
+          href="#main-content"
+          className="sr-only rounded-sm bg-foreground px-4 py-2 text-background focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[200]"
+        >
+          Skip to content
+        </a>
+        <AppProviders>{children}</AppProviders>
+      </body>
+    </html>
+  );
+}
