@@ -90,7 +90,7 @@ export default function AuditPage() {
             columns={columns}
             rows={data}
             rowKey={(r) => r.id}
-            rowHref={(r) => `/memory/${r.id}`}
+            rowHref={(r) => `/audit/${r.id}`}
           />
         )}
       </QueryBoundary>

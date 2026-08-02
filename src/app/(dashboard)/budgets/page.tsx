@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { PiggyBank } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard/page-header';
 import { QueryBoundary } from '@/components/dashboard/query-boundary';
@@ -71,8 +72,9 @@ export default function BudgetsPage() {
                 {data.map((budget) => {
                   const utilization = budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0;
                   return (
-                    <Card key={budget.id}>
-                      <CardContent className="space-y-4 pt-5">
+                    <Card key={budget.id} interactive>
+                      <Link href={`/budgets/${budget.id}`} className="block focus-visible:outline-none">
+                        <CardContent className="space-y-4 pt-5">
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
                             <p className="text-sm font-medium text-foreground">{budget.name}</p>
@@ -114,7 +116,8 @@ export default function BudgetsPage() {
                           {formatCurrency(budget.remaining, budget.currency, { compact: true })}{' '}
                           remaining · resets {formatRelativeTime(budget.resetsAt)}
                         </p>
-                      </CardContent>
+                        </CardContent>
+                      </Link>
                     </Card>
                   );
                 })}

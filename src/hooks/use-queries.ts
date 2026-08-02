@@ -93,6 +93,13 @@ export const usePolicySimulation = () =>
 export const useBudgets = (): UseQueryResult<Budget[]> =>
   useQuery({ queryKey: queryKeys.budgets, queryFn: resources.getBudgets });
 
+export const useBudget = (id: string): UseQueryResult<Budget> =>
+  useQuery({
+    queryKey: queryKeys.budget(id),
+    queryFn: () => resources.getBudget(id),
+    enabled: Boolean(id),
+  });
+
 // -- transactions -----------------------------------------------------------
 export const useTransactions = (): UseQueryResult<Transaction[]> =>
   useQuery({ queryKey: queryKeys.transactions, queryFn: resources.getTransactions });

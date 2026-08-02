@@ -13,6 +13,7 @@ export const queryKeys = {
   policies: ['policies'] as const,
   policy: (id: string) => ['policies', id] as const,
   budgets: ['budgets'] as const,
+  budget: (id: string) => ['budgets', id] as const,
   transactions: ['transactions'] as const,
   transaction: (id: string) => ['transactions', id] as const,
   proposals: ['proposals'] as const,
