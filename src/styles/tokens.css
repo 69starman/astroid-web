@@ -57,15 +57,15 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --background-primary: 18 16 13; /* #12100D */
-  --background-secondary: 13 11 9; /* #0D0B09 */
-  --surface-primary: 26 22 19; /* #1A1613 */
-  --surface-secondary: 36 31 26; /* #241F1A */
+  --background-primary: 10 10 10; /* #0A0A0A */
+  --background-secondary: 6 6 6; /* #060606 */
+  --surface-primary: 18 18 18; /* #121212 */
+  --surface-secondary: 26 26 26; /* #1A1A1A */
   --text-primary: 246 242 234; /* #F6F2EA */
-  --text-secondary: 179 169 155; /* #B3A99B */
-  --text-muted: 138 129 117; /* #8A8175 */
-  --border: 51 44 37; /* #332C25 */
-  --border-strong: 71 62 52; /* #473E34 */
+  --text-secondary: 170 170 170; /* #AAAAAA */
+  --text-muted: 120 120 120; /* #787878 */
+  --border: 38 38 38; /* #262626 */
+  --border-strong: 55 55 55; /* #373737 */
 
   --gold: 139 127 255; /* #8B7FFF — luminous indigo-violet on dark, warm-adjacent */
   --gold-soft: 28 26 56; /* #1C1A38 — very dark indigo surface */

@@ -77,6 +77,9 @@ export function CursorZone({
       onMouseLeave={onLeave}
       className={className}
       style={style}
+      data-cursor-label={label}
+      data-cursor-color={color}
+      data-cursor-textcolor={textColor}
       {...rest}
     >
       {children}
@@ -128,7 +131,7 @@ function CursorLayer({
             rotate: labelRotation,
             scale,
             background: 'var(--cursor-color, #FFFFFF)',
-            border: '1.5px solid var(--cursor-border-color, #000000)',
+            border: '1.5px solid var(--cursor-color, #FFFFFF)',
             borderRadius: 999,
             padding: `${size * 0.18}px ${size * 0.36}px`,
             boxShadow: '0 4px 12px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
@@ -256,8 +259,16 @@ function isImportantElement(el: HTMLElement | null): boolean {
   return false;
 }
 
+function isStandardNeutral(rgb: { r: number; g: number; b: number }): boolean {
+  const threshold = 15;
+  const diff1 = Math.abs(rgb.r - rgb.g);
+  const diff2 = Math.abs(rgb.g - rgb.b);
+  const diff3 = Math.abs(rgb.r - rgb.b);
+  return diff1 < threshold && diff2 < threshold && diff3 < threshold;
+}
+
 function getChameleonColors(el: HTMLElement | null) {
-  const defaultColors = { bg: '#FFFFFF', text: '#000000', border: '#000000' };
+  const defaultColors = { bg: '#FFFFFF', text: '#000000', border: '#FFFFFF' };
   if (!el || typeof window === 'undefined') return defaultColors;
 
   const isTransparent = (color: string) => {
@@ -265,39 +276,81 @@ function getChameleonColors(el: HTMLElement | null) {
   };
 
   let bgColor = 'transparent';
-  let borderColor = 'transparent';
-  let current: HTMLElement | null = el;
+  let textColor = 'transparent';
 
-  while (current && current !== document.documentElement) {
-    const style = window.getComputedStyle(current);
-    const bg = style.backgroundColor;
-    if (isTransparent(bgColor) && !isTransparent(bg)) {
-      bgColor = bg;
+  // 1. Direct inspection of the hovered element itself for colored styles
+  const elStyle = window.getComputedStyle(el);
+  const elBg = elStyle.backgroundColor;
+  const elColor = elStyle.color;
+  const elBorderColor = elStyle.borderColor;
+
+  // If the element has a custom data-cursor-color, respect it immediately
+  if (el.hasAttribute('data-cursor-color')) {
+    bgColor = el.getAttribute('data-cursor-color') || 'transparent';
+    textColor = el.getAttribute('data-cursor-textcolor') || 'transparent';
+  }
+  // Otherwise, if the element has a non-transparent background color that is not neutral, use it
+  else if (!isTransparent(elBg)) {
+    const rgbBg = parseRGB(elBg);
+    if (rgbBg && !isStandardNeutral(rgbBg)) {
+      bgColor = elBg;
     }
-    const bc = style.borderColor;
-    if (isTransparent(borderColor) && !isTransparent(bc)) {
-      borderColor = bc;
+  }
+  
+  // If we still don't have a color, check if the text color itself is a vibrant color
+  if (isTransparent(bgColor) && !isTransparent(elColor)) {
+    const rgbColor = parseRGB(elColor);
+    if (rgbColor && !isStandardNeutral(rgbColor)) {
+      bgColor = elColor;
     }
-    current = current.parentElement;
   }
 
+  // If we still don't have a color, check if the border is a vibrant color
+  if (isTransparent(bgColor) && !isTransparent(elBorderColor)) {
+    const rgbBorder = parseRGB(elBorderColor);
+    if (rgbBorder && !isStandardNeutral(rgbBorder)) {
+      bgColor = elBorderColor;
+    }
+  }
+
+  // 2. Traversal fallback: if the hovered element has neutral/transparent colors,
+  // walk up the DOM to find any parent container background or CursorZone
+  if (isTransparent(bgColor)) {
+    let current: HTMLElement | null = el.parentElement;
+    while (current && current !== document.documentElement) {
+      if (current.hasAttribute('data-cursor-color')) {
+        const attrColor = current.getAttribute('data-cursor-color');
+        if (attrColor && !isTransparent(attrColor)) {
+          bgColor = attrColor;
+          textColor = current.getAttribute('data-cursor-textcolor') || 'transparent';
+          break;
+        }
+      }
+
+      const style = window.getComputedStyle(current);
+      const bg = style.backgroundColor;
+      if (!isTransparent(bg)) {
+        bgColor = bg;
+        break;
+      }
+      current = current.parentElement;
+    }
+  }
+
+  // 3. Final default fallback (body background)
   if (isTransparent(bgColor)) {
     const bodyStyle = window.getComputedStyle(document.body);
     const bodyBg = bodyStyle.backgroundColor;
-    bgColor = !isTransparent(bodyBg) ? bodyBg : '#12100D';
+    bgColor = !isTransparent(bodyBg) ? bodyBg : '#0A0A0A';
   }
 
-  const elStyle = window.getComputedStyle(el);
-  let textColor = elStyle.color;
-  if (isTransparent(textColor)) {
-    textColor = '#FFFFFF';
+  // Determine contrasting text color for readability
+  let contrastText = textColor;
+  if (isTransparent(contrastText)) {
+    contrastText = getContrastColor(bgColor);
   }
 
-  if (isTransparent(borderColor)) {
-    borderColor = textColor;
-  }
-
-  return { bg: bgColor, text: textColor, border: borderColor };
+  return { bg: bgColor, text: contrastText, border: bgColor };
 }
 
 function UserCursorInner({ name }: { name: string }) {
@@ -394,11 +447,9 @@ function UserCursorInner({ name }: { name: string }) {
             setIsOverImportant(isImportant);
           }
 
-          const contrastTextColor = getContrastColor(colors.bg);
-
           containerRef.current.style.setProperty('--cursor-color', colors.bg);
-          containerRef.current.style.setProperty('--cursor-text-color', contrastTextColor);
-          containerRef.current.style.setProperty('--cursor-border-color', contrastTextColor);
+          containerRef.current.style.setProperty('--cursor-text-color', colors.text);
+          containerRef.current.style.setProperty('--cursor-border-color', colors.border);
         } else {
           if (isOverImportantRef.current) {
             isOverImportantRef.current = false;
@@ -450,9 +501,9 @@ function UserCursorInner({ name }: { name: string }) {
       >
         <path
           d="M5 3 L23 14 L14 16 L11 24 Z"
-          fill="var(--cursor-text-color, #FFFFFF)"
-          stroke="var(--cursor-color, rgba(0,0,0,0.18))"
-          strokeWidth={0.8}
+          fill="var(--cursor-color, #FFFFFF)"
+          stroke="var(--cursor-text-color, #000000)"
+          strokeWidth={1.2}
           strokeLinejoin="round"
         />
       </svg>
