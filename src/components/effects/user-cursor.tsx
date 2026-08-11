@@ -278,43 +278,38 @@ function getChameleonColors(el: HTMLElement | null) {
   let bgColor = 'transparent';
   let textColor = 'transparent';
 
-  // 1. Direct inspection of the hovered element itself for colored styles
-  const elStyle = window.getComputedStyle(el);
-  const elBg = elStyle.backgroundColor;
-  const elColor = elStyle.color;
-  const elBorderColor = elStyle.borderColor;
-
-  // If the element has a custom data-cursor-color, respect it immediately
+  // 1. Direct inspection of the hovered element itself
   if (el.hasAttribute('data-cursor-color')) {
     bgColor = el.getAttribute('data-cursor-color') || 'transparent';
     textColor = el.getAttribute('data-cursor-textcolor') || 'transparent';
   }
-  // Otherwise, if the element has a non-transparent background color that is not neutral, use it
-  else if (!isTransparent(elBg)) {
-    const rgbBg = parseRGB(elBg);
-    if (rgbBg && !isStandardNeutral(rgbBg)) {
+
+  // If no custom attribute, check computed styles
+  if (isTransparent(bgColor)) {
+    const elStyle = window.getComputedStyle(el);
+    const elBg = elStyle.backgroundColor;
+
+    // Use background color if it is not transparent (even if neutral)
+    if (!isTransparent(elBg)) {
       bgColor = elBg;
-    }
-  }
-  
-  // If we still don't have a color, check if the text color itself is a vibrant color
-  if (isTransparent(bgColor) && !isTransparent(elColor)) {
-    const rgbColor = parseRGB(elColor);
-    if (rgbColor && !isStandardNeutral(rgbColor)) {
-      bgColor = elColor;
+    } else {
+      // If the background is transparent, check if the element has vibrant text or border color
+      const elColor = elStyle.color;
+      const elBorderColor = elStyle.borderColor;
+
+      const rgbColor = parseRGB(elColor);
+      if (rgbColor && !isStandardNeutral(rgbColor)) {
+        bgColor = elColor;
+      } else {
+        const rgbBorder = parseRGB(elBorderColor);
+        if (rgbBorder && !isStandardNeutral(rgbBorder)) {
+          bgColor = elBorderColor;
+        }
+      }
     }
   }
 
-  // If we still don't have a color, check if the border is a vibrant color
-  if (isTransparent(bgColor) && !isTransparent(elBorderColor)) {
-    const rgbBorder = parseRGB(elBorderColor);
-    if (rgbBorder && !isStandardNeutral(rgbBorder)) {
-      bgColor = elBorderColor;
-    }
-  }
-
-  // 2. Traversal fallback: if the hovered element has neutral/transparent colors,
-  // walk up the DOM to find any parent container background or CursorZone
+  // 2. Traversal fallback: walk up the DOM to find any parent container background or CursorZone
   if (isTransparent(bgColor)) {
     let current: HTMLElement | null = el.parentElement;
     while (current && current !== document.documentElement) {
