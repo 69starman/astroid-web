@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/lib/fonts';
 import { AppProviders } from '@/providers';
+import { CursorProvider } from '@/components/effects/user-cursor';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -48,7 +49,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <CursorProvider>{children}</CursorProvider>
+        </AppProviders>
       </body>
     </html>
   );
