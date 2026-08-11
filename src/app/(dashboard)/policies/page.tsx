@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PolicyShieldIllustration } from '@/components/illustrations';
 import { usePolicies } from '@/hooks/use-queries';
 import { formatNumber } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 const titleCase = (value: string): string =>
   value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
@@ -20,7 +21,7 @@ export default function PoliciesPage() {
   const policies = usePolicies();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Govern"
         title="Policies"
@@ -101,6 +102,6 @@ export default function PoliciesPage() {
           </div>
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

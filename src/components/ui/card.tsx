@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/cn';
+import { motion, HTMLMotionProps } from 'framer-motion';
 
 type CardElevation = 'flat' | 'soft' | 'raised';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps extends Omit<HTMLMotionProps<"div">, "elevation"> {
   elevation?: CardElevation;
   interactive?: boolean;
 }
@@ -15,9 +16,20 @@ const elevationClass: Record<CardElevation, string> = {
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, elevation = 'soft', interactive = false, ...props }, ref) => (
-    <div
+  ({ className, elevation = 'soft', interactive = false, variants, ...props }, ref) => (
+    <motion.div
       ref={ref}
+      variants={variants || {
+        hidden: { opacity: 0, y: 15 },
+        show: { 
+          opacity: 1, 
+          y: 0,
+          transition: {
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1]
+          }
+        },
+      }}
       className={cn(
         'rounded-card border border-border bg-surface',
         elevationClass[elevation],
@@ -35,7 +47,7 @@ export const CardHeader = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col gap-1 p-5', className)}
+      className={cn('flex flex-col gap-1.5 p-6', className)}
       {...props}
     />
   ),
@@ -60,7 +72,7 @@ export const CardDescription = forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-xs text-foreground-secondary', className)}
+    className={cn('text-xs text-foreground-secondary leading-relaxed', className)}
     {...props}
   />
 ));
@@ -68,7 +80,7 @@ CardDescription.displayName = 'CardDescription';
 
 export const CardContent = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-5 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
   ),
 );
 CardContent.displayName = 'CardContent';
@@ -77,7 +89,7 @@ export const CardFooter = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex items-center gap-3 border-t border-border p-5', className)}
+      className={cn('flex items-center gap-3 border-t border-border p-6', className)}
       {...props}
     />
   ),

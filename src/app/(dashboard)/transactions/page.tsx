@@ -12,6 +12,7 @@ import { useTransactions } from '@/hooks/use-queries';
 import { transactionStatus } from '@/lib/status';
 import { formatCurrency, formatRelativeTime, truncateHash } from '@/lib/format';
 import type { Transaction } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 const columns: Column<Transaction>[] = [
   {
@@ -88,7 +89,7 @@ export default function TransactionsPage() {
   const transactions = useTransactions();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Operate"
         title="Transactions"
@@ -116,6 +117,6 @@ export default function TransactionsPage() {
           />
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

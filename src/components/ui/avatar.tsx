@@ -14,11 +14,11 @@ const avatarVariants = cva(
         xl: 'h-20 w-20 text-2xl',
       },
       shape: {
-        circle: 'rounded-full',
+        circle: 'rounded-md',
         squircle: 'rounded-md',
       },
     },
-    defaultVariants: { size: 'md', shape: 'circle' },
+    defaultVariants: { size: 'md', shape: 'squircle' },
   },
 );
 

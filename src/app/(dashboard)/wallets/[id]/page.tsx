@@ -13,19 +13,20 @@ import { useWallet } from '@/hooks/use-queries';
 import { walletStatus } from '@/lib/status';
 import { formatCurrency, formatNumber, formatDateTime, truncateHash } from '@/lib/format';
 import type { AssetBalance } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 const balanceColumns: Column<AssetBalance>[] = [
   { header: 'Asset', cell: (b) => <span className="font-medium">{b.asset}</span> },
   {
     header: 'Balance',
     align: 'right',
-    cell: (b) => <span className="tabular">{formatNumber(b.balance)}</span>,
+    cell: (b) => <span className="tabular"><AnimatedNumber value={b.balance} formatter={(v) => formatNumber(v)} /></span>,
   },
   {
     header: 'USD value',
     align: 'right',
     cell: (b) => (
-      <span className="tabular">{formatCurrency(b.usdValue, 'USDC')}</span>
+      <span className="tabular"><AnimatedNumber value={b.usdValue} formatter={(v) => formatCurrency(v, 'USDC')} /></span>
     ),
   },
 ];
@@ -34,7 +35,7 @@ export default function WalletDetailPage({ params }: { params: { id: string } })
   const wallet = useWallet(params.id);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/wallets"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -86,7 +87,7 @@ export default function WalletDetailPage({ params }: { params: { id: string } })
                     {truncateHash(data.stellarAddress, 6, 6)}
                   </KeyValue>
                   <KeyValue label="Total value">
-                    {formatCurrency(data.totalUsdValue, 'USDC')}
+                    <AnimatedNumber value={data.totalUsdValue} formatter={(v) => formatCurrency(v, 'USDC')} />
                   </KeyValue>
                   <KeyValue label="Risk">
                     <RiskBadge score={data.riskScore} showScore />
@@ -117,6 +118,6 @@ export default function WalletDetailPage({ params }: { params: { id: string } })
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

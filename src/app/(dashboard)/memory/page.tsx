@@ -13,12 +13,13 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { MemoryIllustration } from '@/components/illustrations';
 import { useMemoryRecords } from '@/hooks/use-queries';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 export default function MemoryPage() {
   const records = useMemoryRecords();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Command Center"
         title="Financial Memory"
@@ -52,7 +53,7 @@ export default function MemoryPage() {
                   <Card interactive className="p-5">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex items-start gap-3">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold-soft text-gold-strong">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gold-soft text-gold-strong">
                           <BrainCircuit className="h-4 w-4" aria-hidden />
                         </span>
                         <div className="space-y-1">
@@ -91,6 +92,6 @@ export default function MemoryPage() {
           </div>
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

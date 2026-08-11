@@ -16,6 +16,7 @@ import {
 } from '@/components/charts';
 import { useOverview } from '@/hooks/use-queries';
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 const chartSkeleton = <div className="skeleton h-[260px] w-full rounded-md" />;
 
@@ -23,7 +24,7 @@ export default function AnalyticsPage() {
   const overview = useOverview();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Command Center"
         title="Analytics"
@@ -56,14 +57,16 @@ export default function AnalyticsPage() {
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard
                   label="Total balance"
-                  value={formatCurrency(data.totalBalance, 'USDC', { compact: true })}
+                  rawNumber={data.totalBalance}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   accent
                   href="/wallets"
                   icon={<Wallet className="h-4 w-4" aria-hidden />}
                 />
                 <StatCard
                   label="Monthly spend"
-                  value={formatCurrency(data.monthlySpend, 'USDC', { compact: true })}
+                  rawNumber={data.monthlySpend}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   delta={data.monthlySpendDelta}
                   deltaLabel="vs last month"
                   upIsGood={false}
@@ -71,13 +74,15 @@ export default function AnalyticsPage() {
                 />
                 <StatCard
                   label="Budget utilization"
-                  value={formatPercent(data.budgetUtilization)}
+                  rawNumber={data.budgetUtilization}
+                  formatter={(val) => formatPercent(val)}
                   footer="of company operating budget"
                   icon={<Gauge className="h-4 w-4" aria-hidden />}
                 />
                 <StatCard
                   label="Active agents"
-                  value={formatNumber(data.activeAgents)}
+                  rawNumber={data.activeAgents}
+                  formatter={(val) => formatNumber(val)}
                   footer="operating within policy"
                   href="/agents"
                   icon={<Bot className="h-4 w-4" aria-hidden />}
@@ -137,6 +142,6 @@ export default function AnalyticsPage() {
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

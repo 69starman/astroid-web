@@ -14,12 +14,13 @@ import { AgentClusterIllustration } from '@/components/illustrations';
 import { useAgents } from '@/hooks/use-queries';
 import { agentStatus } from '@/lib/status';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 export default function AgentsPage() {
   const agents = useAgents();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Operate"
         title="Agents"
@@ -59,7 +60,7 @@ export default function AgentsPage() {
                     <Card interactive className="h-full p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
-                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-soft text-gold-strong">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-gold-soft text-gold-strong">
                             <Bot className="h-5 w-5" aria-hidden />
                           </span>
                           <div className="space-y-1">
@@ -114,7 +115,7 @@ export default function AgentsPage() {
           </div>
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }
 

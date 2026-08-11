@@ -20,11 +20,11 @@
   --border: 216 204 188; /* #D8CCBC */
   --border-strong: 201 187 166; /* #C9BBA6 */
 
-  /* Signature accent — Astroid Gold */
-  --gold: 200 154 43; /* #C89A2B */
-  --gold-soft: 243 231 198; /* #F3E7C6 */
-  --gold-strong: 166 126 30; /* #A67E1E */
-  --gold-foreground: 23 20 18; /* text on gold */
+  /* Signature accent — Electric Indigo-Violet (AI Intelligence / Stellar Network) */
+  --gold: 91 80 214; /* #5B50D6 — deep electric indigo, warm-tone harmonious */
+  --gold-soft: 236 234 252; /* #ECEAFC — barely-there indigo tint */
+  --gold-strong: 68 58 178; /* #443AB2 — pressed state */
+  --gold-foreground: 255 255 255; /* text on accent */
 
   /* Functional colors */
   --success: 47 143 99; /* #2F8F63 */
@@ -36,8 +36,8 @@
   --info: 43 127 255; /* #2B7FFF */
   --info-soft: 217 231 255;
 
-  /* Focus ring — deep gold, AA-visible against light surfaces */
-  --ring: 138 106 23; /* #8A6A17 */
+  /* Focus ring — Indigo */
+  --ring: 91 80 214;
   --shadow-color: 23 20 18;
 
   /* Chart palette — validated (dataviz skill) against surface #FFFDF8 */
@@ -67,10 +67,10 @@
   --border: 51 44 37; /* #332C25 */
   --border-strong: 71 62 52; /* #473E34 */
 
-  --gold: 221 178 85; /* brighter on dark */
-  --gold-soft: 46 38 23;
-  --gold-strong: 240 206 122;
-  --gold-foreground: 23 20 18;
+  --gold: 139 127 255; /* #8B7FFF — luminous indigo-violet on dark, warm-adjacent */
+  --gold-soft: 28 26 56; /* #1C1A38 — very dark indigo surface */
+  --gold-strong: 167 157 255; /* #A79DFF — bright hover state */
+  --gold-foreground: 13 11 9;
 
   --success: 63 169 120;
   --success-soft: 22 39 31;
@@ -81,7 +81,7 @@
   --info: 76 147 255;
   --info-soft: 20 32 58;
 
-  --ring: 240 206 122;
+  --ring: 139 127 255;
   --shadow-color: 0 0 0;
 
   /* Chart palette — validated against dark surface #1A1613 */

@@ -114,7 +114,8 @@ export function CashflowChart({
           tick={axisTick}
           axisLine={{ stroke: AXIS }}
           tickLine={false}
-          minTickGap={24}
+          minTickGap={32}
+          interval="preserveStartEnd"
         />
         <YAxis
           tick={axisTick}
@@ -248,6 +249,8 @@ export function AgentSpendChart({
           tick={{ ...axisTick, fontFamily: 'var(--font-sans)' }}
           axisLine={{ stroke: AXIS }}
           tickLine={false}
+          interval="preserveStartEnd"
+          tickFormatter={(v: string) => (v.length > 12 ? `${v.slice(0, 10)}...` : v)}
         />
         <YAxis
           tick={axisTick}

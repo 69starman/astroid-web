@@ -20,6 +20,7 @@ import {
   formatRelativeTime,
 } from '@/lib/format';
 import type { Transaction } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 const spendColumns: Column<Transaction>[] = [
   {
@@ -65,7 +66,7 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
   const allTransactions = useTransactions();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/budgets"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -124,18 +125,18 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-2xs font-medium uppercase tracking-[0.12em] text-foreground-secondary">
-                        {formatCurrency(data.limit, data.currency, { compact: true })} limit
+                        <AnimatedNumber value={data.limit} formatter={(v) => formatCurrency(v, data.currency, { compact: true })} /> limit
                       </p>
                       <p className="mt-2 font-display text-4xl font-semibold leading-none tracking-tight tabular">
-                        {formatCurrency(data.spent, data.currency, { compact: true })}
+                        <AnimatedNumber value={data.spent} formatter={(v) => formatCurrency(v, data.currency, { compact: true })} />
                       </p>
                       <p className="mt-2 text-2xs text-foreground-secondary">
-                        {formatCurrency(data.remaining, data.currency)} remaining of{' '}
-                        {formatCurrency(data.limit, data.currency)} this {data.period}
+                        <AnimatedNumber value={data.remaining} formatter={(v) => formatCurrency(v, data.currency)} /> remaining of{' '}
+                        <AnimatedNumber value={data.limit} formatter={(v) => formatCurrency(v, data.currency)} /> this {data.period}
                       </p>
                     </div>
                     <span className="tabular text-3xl font-semibold text-foreground">
-                      {formatPercent(utilization)}
+                      <AnimatedNumber value={utilization} formatter={(v) => formatPercent(v)} />
                     </span>
                   </div>
                   <ProgressBar value={utilization} label="Budget utilization" className="mt-4" tone={utilization >= 90 ? 'danger' : utilization >= 75 ? 'warning' : 'gold'} />
@@ -238,10 +239,10 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
                             </div>
                             <div className="flex items-baseline gap-2">
                               <span className="tabular font-display text-xl font-semibold text-foreground">
-                                {formatCurrency(child.spent, child.currency, { compact: true })}
+                                <AnimatedNumber value={child.spent} formatter={(v) => formatCurrency(v, child.currency, { compact: true })} />
                               </span>
                               <span className="text-2xs text-foreground-muted">
-                                / {formatCurrency(child.limit, child.currency, { compact: true })}
+                                / <AnimatedNumber value={child.limit} formatter={(v) => formatCurrency(v, child.currency, { compact: true })} />
                               </span>
                             </div>
                             <ProgressBar value={childUtil} label="Sub-budget utilization" />
@@ -256,6 +257,6 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

@@ -2,13 +2,16 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Card } from '@/components/ui/card';
+import { AnimatedNumber } from '@/components/ui/motion';
 
 // ---------------------------------------------------------------------------
 // StatCard — a KPI tile wrapping StatNumber in a surface with an optional link
 // ---------------------------------------------------------------------------
 export interface StatCardProps {
   label: string;
-  value: string;
+  value?: string;
+  rawNumber?: number;
+  formatter?: (val: number) => string;
   delta?: number;
   deltaLabel?: string;
   upIsGood?: boolean;
@@ -27,6 +30,8 @@ export interface StatCardProps {
 export function StatCard({
   label,
   value,
+  rawNumber,
+  formatter,
   delta,
   deltaLabel,
   upIsGood = true,
@@ -58,7 +63,11 @@ export function StatCard({
           accent && 'text-accent-gradient',
         )}
       >
-        {value}
+        {rawNumber !== undefined && formatter ? (
+          <AnimatedNumber value={rawNumber} formatter={formatter} />
+        ) : (
+          value
+        )}
       </span>
       <div className="mt-auto flex items-center justify-between gap-2">
         {hasDelta ? (

@@ -14,12 +14,13 @@ import { VaultIllustration } from '@/components/illustrations';
 import { useWallets } from '@/hooks/use-queries';
 import { walletStatus } from '@/lib/status';
 import { formatCurrency, formatNumber, truncateHash } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 export default function WalletsPage() {
   const wallets = useWallets();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Operate"
         title="Wallets"
@@ -52,14 +53,16 @@ export default function WalletsPage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <StatCard
                   label="Total value"
-                  value={formatCurrency(totalValue, 'USDC', { compact: true })}
+                  rawNumber={totalValue}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   accent
                   icon={<WalletIcon className="h-4 w-4" aria-hidden />}
                 />
-                <StatCard label="Wallets" value={formatNumber(data.length)} />
+                <StatCard label="Wallets" rawNumber={data.length} formatter={(val) => formatNumber(val)} />
                 <StatCard
                   label="Active"
-                  value={formatNumber(activeCount)}
+                  rawNumber={activeCount}
+                  formatter={(val) => formatNumber(val)}
                   footer="operational now"
                 />
               </div>
@@ -117,6 +120,6 @@ export default function WalletsPage() {
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

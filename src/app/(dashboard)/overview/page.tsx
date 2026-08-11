@@ -22,6 +22,7 @@ import { useOverview, useBriefing } from '@/hooks/use-queries';
 import { useAssistantStore } from '@/stores/ui-store';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
 import type { AiInsightSeverity } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 const severityBadge: Record<AiInsightSeverity, 'info' | 'success' | 'warning' | 'danger'> = {
   info: 'info',
@@ -36,7 +37,7 @@ export default function OverviewPage() {
   const openAssistant = useAssistantStore((s) => s.setOpen);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Command Center"
         title="Overview"
@@ -63,14 +64,16 @@ export default function OverviewPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Total balance"
-              value={formatCurrency(data.totalBalance, 'USD', { compact: true })}
+              rawNumber={data.totalBalance}
+              formatter={(val) => formatCurrency(val, 'USD', { compact: true })}
               icon={<WalletIcon className="h-4 w-4" />}
               accent
               href="/wallets"
             />
             <StatCard
               label="Monthly spend"
-              value={formatCurrency(data.monthlySpend, 'USD', { compact: true })}
+              rawNumber={data.monthlySpend}
+              formatter={(val) => formatCurrency(val, 'USD', { compact: true })}
               delta={data.monthlySpendDelta}
               deltaLabel="vs last month"
               upIsGood={false}
@@ -79,14 +82,16 @@ export default function OverviewPage() {
             />
             <StatCard
               label="Active agents"
-              value={formatNumber(data.activeAgents)}
+              rawNumber={data.activeAgents}
+              formatter={(val) => formatNumber(val)}
               icon={<Bot className="h-4 w-4" />}
               footer="Executing this month"
               href="/agents"
             />
             <StatCard
               label="Pending approvals"
-              value={formatNumber(data.pendingApprovals)}
+              rawNumber={data.pendingApprovals}
+              formatter={(val) => formatNumber(val)}
               icon={<ShieldAlert className="h-4 w-4" />}
               footer="Awaiting your review"
               href="/approvals"
@@ -239,7 +244,7 @@ export default function OverviewPage() {
                     className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surface-secondary/50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-surface-secondary text-foreground-secondary">
+                      <span className="grid h-9 w-9 place-items-center rounded-md bg-surface-secondary text-foreground-secondary">
                         <Bot className="h-4 w-4" aria-hidden />
                       </span>
                       <div>
@@ -259,6 +264,6 @@ export default function OverviewPage() {
           )}
         </QueryBoundary>
       </div>
-    </div>
+    </PageTransition>
   );
 }

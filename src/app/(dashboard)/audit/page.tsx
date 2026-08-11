@@ -10,6 +10,7 @@ import { MemoryIllustration } from '@/components/illustrations';
 import { useMemoryRecords } from '@/hooks/use-queries';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
 import type { MemoryRecord } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 const columns: Column<MemoryRecord>[] = [
   {
@@ -66,7 +67,7 @@ export default function AuditPage() {
   const records = useMemoryRecords();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Govern"
         title="Audit log"
@@ -94,6 +95,6 @@ export default function AuditPage() {
           />
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

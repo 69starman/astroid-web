@@ -11,12 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { useTransaction } from '@/hooks/use-queries';
 import { transactionStatus } from '@/lib/status';
 import { formatCurrency, formatDateTime, truncateHash } from '@/lib/format';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 export default function TransactionDetailPage({ params }: { params: { id: string } }) {
   const transaction = useTransaction(params.id);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/transactions"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -56,7 +57,7 @@ export default function TransactionDetailPage({ params }: { params: { id: string
               <Card className="relative overflow-hidden p-5">
                 <div className="flex items-center gap-3">
                   <span
-                    className={`grid h-11 w-11 place-items-center rounded-full ${
+                    className={`grid h-11 w-11 place-items-center rounded-md ${
                       outbound
                         ? 'bg-surface-secondary text-foreground'
                         : 'bg-success-soft text-success'
@@ -67,10 +68,10 @@ export default function TransactionDetailPage({ params }: { params: { id: string
                   <div>
                     <p className="font-display text-2xl font-semibold leading-none tracking-tight tabular">
                       {outbound ? '−' : '+'}
-                      {formatCurrency(data.amount, data.asset)}
+                      <AnimatedNumber value={data.amount} formatter={(v) => formatCurrency(v, data.asset)} />
                     </p>
                     <p className="mt-1 text-2xs capitalize text-foreground-secondary">
-                      {data.direction} · {formatCurrency(data.usdValue, 'USDC')} USD value
+                      {data.direction} · <AnimatedNumber value={data.usdValue} formatter={(v) => formatCurrency(v, 'USDC')} /> USD value
                     </p>
                   </div>
                 </div>
@@ -83,9 +84,11 @@ export default function TransactionDetailPage({ params }: { params: { id: string
                     {truncateHash(data.counterpartyAddress, 6, 6)}
                   </KeyValue>
                   <KeyValue label="Asset">{data.asset}</KeyValue>
-                  <KeyValue label="Amount">{formatCurrency(data.amount, data.asset)}</KeyValue>
+                  <KeyValue label="Amount">
+                    <AnimatedNumber value={data.amount} formatter={(v) => formatCurrency(v, data.asset)} />
+                  </KeyValue>
                   <KeyValue label="USD value">
-                    {formatCurrency(data.usdValue, 'USDC')}
+                    <AnimatedNumber value={data.usdValue} formatter={(v) => formatCurrency(v, 'USDC')} />
                   </KeyValue>
                   <KeyValue label="Direction">
                     <span className="capitalize">{data.direction}</span>
@@ -129,6 +132,6 @@ export default function TransactionDetailPage({ params }: { params: { id: string
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

@@ -12,6 +12,7 @@ import { VaultIllustration } from '@/components/illustrations';
 import { useCurrentUser, useOrganizations, useTeam } from '@/hooks/use-queries';
 import { formatDate, formatRelativeTime } from '@/lib/format';
 import type { OrgPlan, User, UserRole } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 type BadgeVariant = NonNullable<BadgeProps['variant']>;
 
@@ -89,7 +90,7 @@ export default function SettingsPage() {
   const team = useTeam();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Workspace"
         title="Settings"
@@ -217,6 +218,6 @@ export default function SettingsPage() {
           )}
         </QueryBoundary>
       </div>
-    </div>
+    </PageTransition>
   );
 }

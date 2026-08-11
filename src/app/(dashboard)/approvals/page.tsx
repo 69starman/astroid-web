@@ -16,12 +16,13 @@ import { BellIllustration } from '@/components/illustrations';
 import { useProposals } from '@/hooks/use-queries';
 import { proposalStatus } from '@/lib/status';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 export default function ApprovalsPage() {
   const proposals = useProposals();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Operate"
         title="Approvals"
@@ -141,6 +142,6 @@ export default function ApprovalsPage() {
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

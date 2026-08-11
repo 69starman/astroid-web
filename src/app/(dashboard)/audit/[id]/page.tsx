@@ -19,6 +19,7 @@ import { useMemoryRecord } from '@/hooks/use-queries';
 import { cn } from '@/lib/cn';
 import { formatCurrency, formatDateTime, truncateHash } from '@/lib/format';
 import type { MemoryStep, MemoryStepKind } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 const stepTone: Record<MemoryStepKind, string> = {
   conversation: 'bg-info-soft text-info',
@@ -53,7 +54,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
   const record = useMemoryRecord(params.id);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/audit"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -99,7 +100,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
                         Signed amount
                       </p>
                       <p className="mt-1 font-display text-4xl font-semibold leading-none tracking-tight tabular">
-                        {formatCurrency(data.amount, data.asset)}
+                        <AnimatedNumber value={data.amount} formatter={(v) => formatCurrency(v, data.asset)} />
                       </p>
                     </div>
                     <dl className="grid gap-3 text-right sm:text-left">
@@ -127,7 +128,7 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
                         )}
                         <span
                           className={cn(
-                            'absolute -left-[22px] top-0 grid h-9 w-9 place-items-center rounded-full border border-surface',
+                            'absolute -left-[22px] top-0 grid h-9 w-9 place-items-center rounded-md border border-surface',
                             stepTone[step.kind],
                           )}
                         >
@@ -216,6 +217,6 @@ export default function AuditDetailPage({ params }: { params: { id: string } }) 
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

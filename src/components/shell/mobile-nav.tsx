@@ -90,7 +90,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                     <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden />
                     <span className="truncate">{item.label}</span>
                     {item.signature && (
-                      <span className="ml-auto h-1.5 w-1.5 rounded-full bg-gold" aria-hidden />
+                      <span className="ml-auto h-1.5 w-1.5 rounded-xs bg-gold" aria-hidden />
                     )}
                   </Link>
                 );

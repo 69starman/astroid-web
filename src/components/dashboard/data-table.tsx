@@ -47,7 +47,7 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   const router = useRouter();
-  const pad = compact ? 'px-4 py-2.5' : 'px-4 py-3.5';
+  const pad = compact ? 'px-5 py-3' : 'px-6 py-4';
 
   return (
     <div className={cn('overflow-hidden rounded-card border border-border bg-surface', className)}>

@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemoryRecord } from '@/hooks/use-queries';
 import { formatCurrency, formatDateTime } from '@/lib/format';
 import type { MemoryStepKind } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 import { cn } from '@/lib/cn';
 
 const stepStyle: Record<MemoryStepKind, { icon: LucideIcon; ring: string; tone: string }> = {
@@ -36,7 +37,7 @@ export default function MemoryDetailPage({ params }: { params: { id: string } })
   const record = useMemoryRecord(params.id);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/memory"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -84,7 +85,7 @@ export default function MemoryDetailPage({ params }: { params: { id: string } })
                     {data.reason}
                   </KeyValue>
                   <KeyValue label="Amount">
-                    {formatCurrency(data.amount, data.asset)}
+                    <AnimatedNumber value={data.amount} formatter={(v) => formatCurrency(v, data.asset)} />
                   </KeyValue>
                   <KeyValue label="Policy used">{data.policyUsed}</KeyValue>
                   <KeyValue label="Approved by">
@@ -129,7 +130,7 @@ export default function MemoryDetailPage({ params }: { params: { id: string } })
                       <div className="relative flex flex-col items-center">
                         <span
                           className={cn(
-                            'z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full',
+                            'z-10 grid h-9 w-9 shrink-0 place-items-center rounded-md',
                             style.ring,
                           )}
                         >
@@ -165,7 +166,7 @@ export default function MemoryDetailPage({ params }: { params: { id: string } })
                             {meta.map(([key, value]) => (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-2xs text-foreground-secondary"
+                                className="inline-flex items-center gap-1 rounded-xs border border-border bg-surface px-2 py-0.5 text-2xs text-foreground-secondary"
                               >
                                 <span className="text-foreground-muted">{key}</span>
                                 <span className="tabular">{value}</span>
@@ -182,6 +183,6 @@ export default function MemoryDetailPage({ params }: { params: { id: string } })
           </div>
         )}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

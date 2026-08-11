@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { usePolicy, usePolicySimulation } from '@/hooks/use-queries';
 import { formatCurrency, formatNumber, formatDateTime } from '@/lib/format';
 import type { PolicySimulationResult } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 const titleCase = (value: string): string =>
   value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
@@ -39,7 +40,7 @@ export default function PolicyDetailPage({ params }: { params: { id: string } })
   const [amount, setAmount] = useState(1000);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/policies"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -155,7 +156,7 @@ export default function PolicyDetailPage({ params }: { params: { id: string } })
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }
 
@@ -186,11 +187,11 @@ function SimulationResult({ result }: { result: PolicySimulationResult }) {
           <RiskBadge score={result.estimatedRisk} showScore />
         </KeyValue>
         <KeyValue label="Required approvals">
-          {formatNumber(result.requiredApprovals)}
+          <AnimatedNumber value={result.requiredApprovals} formatter={(v) => formatNumber(v)} />
         </KeyValue>
         <KeyValue label="Budget">{result.budgetImpact.name}</KeyValue>
         <KeyValue label="Remaining after">
-          {formatCurrency(result.budgetImpact.remainingAfter, 'USDC')}
+          <AnimatedNumber value={result.budgetImpact.remainingAfter} formatter={(v) => formatCurrency(v, 'USDC')} />
         </KeyValue>
       </dl>
 

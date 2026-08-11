@@ -25,6 +25,7 @@ import { useNotifications } from '@/hooks/use-queries';
 import { formatRelativeTime } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { NotificationType } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 const typeStyle: Record<NotificationType, { icon: LucideIcon; ring: string }> = {
   budget_exceeded: { icon: PiggyBank, ring: 'bg-danger-soft text-danger' },
@@ -41,7 +42,7 @@ export default function NotificationsPage() {
   const notifications = useNotifications();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Workspace"
         title="Notifications"
@@ -87,7 +88,7 @@ export default function NotificationsPage() {
                     >
                       <span
                         className={cn(
-                          'grid h-9 w-9 shrink-0 place-items-center rounded-full',
+                          'grid h-9 w-9 shrink-0 place-items-center rounded-md',
                           style.ring,
                         )}
                       >
@@ -133,6 +134,6 @@ export default function NotificationsPage() {
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

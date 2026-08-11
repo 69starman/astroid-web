@@ -15,6 +15,7 @@ import { useProposal } from '@/hooks/use-queries';
 import { proposalStatus } from '@/lib/status';
 import { formatCurrency, formatDateTime, formatRelativeTime } from '@/lib/format';
 import type { ApprovalDecision } from '@/types/domain';
+import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 
 const decisionMeta: Record<ApprovalDecision['decision'], { label: string; className: string }> = {
   approved: { label: 'Approved', className: 'text-success' },
@@ -24,7 +25,7 @@ const decisionMeta: Record<ApprovalDecision['decision'], { label: string; classN
 };
 
 function DecisionIcon({ decision }: { decision: ApprovalDecision['decision'] }) {
-  const base = 'grid h-8 w-8 place-items-center rounded-full border';
+  const base = 'grid h-8 w-8 place-items-center rounded-md border';
   const styles: Record<ApprovalDecision['decision'], string> = {
     approved: 'border-success/40 bg-success-soft text-success',
     rejected: 'border-danger/40 bg-danger-soft text-danger',
@@ -48,7 +49,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
   const proposal = useProposal(params.id);
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <Link
         href="/approvals"
         className="inline-flex items-center gap-1 text-2xs font-medium text-foreground-secondary transition-colors hover:text-foreground"
@@ -94,7 +95,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
                         Proposed spend
                       </p>
                       <p className="mt-2 font-display text-4xl font-semibold leading-none tracking-tight tabular">
-                        {formatCurrency(data.amount, data.asset)}
+                        <AnimatedNumber value={data.amount} formatter={(v) => formatCurrency(v, data.asset)} />
                       </p>
                       <p className="mt-2 text-2xs text-foreground-secondary">
                         to {data.counterparty} · expires{' '}
@@ -244,6 +245,6 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }

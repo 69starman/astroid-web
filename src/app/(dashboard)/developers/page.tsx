@@ -13,6 +13,7 @@ import { ChartIllustration } from '@/components/illustrations';
 import { useApiKeys, useWebhooks } from '@/hooks/use-queries';
 import { formatDate, formatNumber, formatRelativeTime } from '@/lib/format';
 import type { ApiKey } from '@/types/domain';
+import { PageTransition } from '@/components/ui/motion';
 
 const keyColumns: Column<ApiKey>[] = [
   {
@@ -73,7 +74,7 @@ export default function DevelopersPage() {
   const webhooks = useWebhooks();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Workspace"
         title="Developers"
@@ -129,7 +130,7 @@ export default function DevelopersPage() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0 space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-secondary text-foreground-secondary">
+                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-surface-secondary text-foreground-secondary">
                             <WebhookIcon className="h-4 w-4" aria-hidden />
                           </span>
                           <p className="truncate font-mono text-xs text-foreground">{hook.url}</p>
@@ -158,6 +159,6 @@ export default function DevelopersPage() {
           )}
         </QueryBoundary>
       </div>
-    </div>
+    </PageTransition>
   );
 }

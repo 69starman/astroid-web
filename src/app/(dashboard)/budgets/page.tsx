@@ -13,12 +13,13 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PolicyShieldIllustration } from '@/components/illustrations';
 import { useBudgets } from '@/hooks/use-queries';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
+import { PageTransition } from '@/components/ui/motion';
 
 export default function BudgetsPage() {
   const budgets = useBudgets();
 
   return (
-    <div className="space-y-8">
+    <PageTransition className="space-y-8">
       <PageHeader
         eyebrow="Govern"
         title="Budgets"
@@ -52,17 +53,20 @@ export default function BudgetsPage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <StatCard
                   label="Total limit"
-                  value={formatCurrency(totalLimit, 'USDC', { compact: true })}
+                  rawNumber={totalLimit}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   icon={<PiggyBank className="h-4 w-4" aria-hidden />}
                 />
                 <StatCard
                   label="Total spent"
-                  value={formatCurrency(totalSpent, 'USDC', { compact: true })}
+                  rawNumber={totalSpent}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   footer="across all envelopes"
                 />
                 <StatCard
                   label="Remaining"
-                  value={formatCurrency(totalRemaining, 'USDC', { compact: true })}
+                  rawNumber={totalRemaining}
+                  formatter={(val) => formatCurrency(val, 'USDC', { compact: true })}
                   accent
                 />
               </div>
@@ -126,6 +130,6 @@ export default function BudgetsPage() {
           );
         }}
       </QueryBoundary>
-    </div>
+    </PageTransition>
   );
 }
