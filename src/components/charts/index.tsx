@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -22,13 +23,13 @@ import type {
   TimeseriesPoint,
 } from '@/types/domain';
 
-/**
- * Chart layer — thin recharts wrappers styled to the Astroid token palette.
- *
- * Colors read from the CSS custom properties in `tokens.css` so charts stay
- * theme-aware in light/dark/high-contrast. The palette was validated by the
- * dataviz workflow against both surface colors.
- */
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  return mounted;
+}
 
 const AXIS = 'rgb(var(--chart-axis))';
 const GRID = 'rgb(var(--chart-grid))';
@@ -92,10 +93,15 @@ export function CashflowChart({
   data,
   height = 260,
 }: {
-  data: TimeseriesPoint[];
+  data?: TimeseriesPoint[];
   height?: number;
 }) {
+  const mounted = useMounted();
+  if (!mounted || !data || !Array.isArray(data)) {
+    return <div className="skeleton w-full rounded-md" style={{ height }} />;
+  }
   return (
+
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <defs>
@@ -180,9 +186,13 @@ export function CategoryBarChart({
   data,
   height = 260,
 }: {
-  data: SpendingByCategory[];
+  data?: SpendingByCategory[];
   height?: number;
 }) {
+  const mounted = useMounted();
+  if (!mounted || !data || !Array.isArray(data)) {
+    return <div className="skeleton w-full rounded-md" style={{ height }} />;
+  }
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart
@@ -238,9 +248,13 @@ export function AgentSpendChart({
   data,
   height = 260,
 }: {
-  data: AgentSpend[];
+  data?: AgentSpend[];
   height?: number;
 }) {
+  const mounted = useMounted();
+  if (!mounted || !data || !Array.isArray(data)) {
+    return <div className="skeleton w-full rounded-md" style={{ height }} />;
+  }
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -304,11 +318,16 @@ export function DonutChart({
   centerLabel,
   centerValue,
 }: {
-  data: DonutDatum[];
+  data?: DonutDatum[];
   height?: number;
   centerLabel?: string;
   centerValue?: string;
 }) {
+  const mounted = useMounted();
+  if (!mounted || !data || !Array.isArray(data)) {
+    return <div className="skeleton w-full rounded-md" style={{ height }} />;
+  }
+
   return (
     <div className="relative" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
