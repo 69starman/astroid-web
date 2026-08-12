@@ -31,38 +31,42 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0A',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F6F2EA' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' },
+  ],
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={fontVariables} data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('astroid-theme');
-                  var resolved = 'dark';
+                  var theme = localStorage.getItem('astroid-theme-v2');
+                  var resolved = 'light';
                   if (theme) {
                     var parsed = JSON.parse(theme);
-                    if (parsed && parsed.state && parsed.state.mode && parsed.state.mode !== 'system') {
+                    if (parsed && parsed.state && parsed.state.mode) {
                       resolved = parsed.state.mode;
                     }
                   }
+                  if (resolved === 'system') {
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    resolved = prefersDark ? 'dark' : 'light';
+                  }
                   document.documentElement.setAttribute('data-theme', resolved);
-                } catch (e) {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                }
+                } catch (e) {}
               })()
             `,
           }}
         />
       </head>
-
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <a
           href="#main-content"
