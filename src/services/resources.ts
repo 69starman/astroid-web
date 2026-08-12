@@ -32,12 +32,22 @@ import type {
 
 const LATENCY_MS = 320;
 
-function resolve<T>(mockValue: T, live: () => Promise<T>): Promise<T> {
+async function resolve<T>(mockValue: T, live: () => Promise<T>): Promise<T> {
   if (isMockMode) {
     return new Promise((r) => setTimeout(() => r(mockValue), LATENCY_MS));
   }
-  return live();
+  try {
+    const data = await live();
+    if (data !== undefined && data !== null) {
+      return data;
+    }
+    return mockValue;
+  } catch (err) {
+    console.warn('[Astroid API] Live request failed, falling back to local dataset:', err);
+    return mockValue;
+  }
 }
+
 
 function notFound(entity: string): never {
   throw new Error(`${entity} not found`);
