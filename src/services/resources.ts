@@ -76,7 +76,8 @@ export const resources = {
   getBriefing: (): Promise<AiBriefing> =>
     resolve(mock.aiBriefing, () => one<AiBriefing>('/ai/briefing')),
   getAssistantSeed: (): Promise<ChatMessage[]> =>
-    resolve(mock.assistantSeed, () => list<ChatMessage[]>('/ai/assistant/seed')),
+    resolve(mock.assistantSeed, () => one<ChatMessage[]>('/ai/assistant/seed')),
+
 
   // -- wallets ------------------------------------------------------------
   getWallets: (): Promise<Wallet[]> => resolve(mock.wallets, () => list<Wallet[]>('/wallets')),

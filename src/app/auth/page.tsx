@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { Sparkles, Globe, ArrowRight, Shield } from 'lucide-react';
 import { setAllowed, getAddress } from '@stellar/freighter-api';
 import Link from 'next/link';
+import { env, isMockMode } from '@/lib/env';
+import { storeToken } from '@/services/client';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -16,26 +18,71 @@ export default function AuthPage() {
     try {
       setIsConnecting(true);
       setError(null);
-      
+
       const allowed = await setAllowed();
       if (!allowed) {
         throw new Error('Freighter connection request was rejected.');
       }
-      
+
       const publicKey = await getAddress();
       if (!publicKey) {
         throw new Error('Could not retrieve public key from Freighter.');
       }
 
-      // Transition to dashboard upon successful connection
+      if (!isMockMode) {
+        // Exchange Freighter identity for a backend JWT.
+        // Uses the seeded demo account — replace with a proper challenge/SEP-10
+        // auth flow once the passkey/wallet auth endpoint is implemented.
+        const base = `${env.apiUrl}${env.apiVersion}`;
+        const demoEmail = 'owner@astroid.dev';
+        const demoPassword = 'Astroid!Demo123';
+
+        // Attempt login first; if the account doesn't exist yet, register it.
+        let res = await fetch(`${base}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+        });
+
+        if (!res.ok) {
+          // Fallback: register then login (first-time setup)
+          await fetch(`${base}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              organizationName: 'Astroid Labs',
+              name: 'Ava Owner',
+              email: demoEmail,
+              password: demoPassword,
+            }),
+          });
+          res = await fetch(`${base}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+          });
+        }
+
+        const body = await res.json();
+        const token: string | undefined =
+          body?.data?.tokens?.accessToken ?? body?.tokens?.accessToken;
+
+        if (!token) {
+          throw new Error('Authentication succeeded but no access token was returned.');
+        }
+
+        storeToken(token);
+      }
+
       router.push('/overview');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Freighter login failed:', err);
-      setError(err.message || 'Failed to connect to Freighter wallet.');
+      setError(err instanceof Error ? err.message : 'Failed to connect to Freighter wallet.');
     } finally {
       setIsConnecting(false);
     }
   };
+
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background overflow-hidden p-6 selection:bg-gold/30">
