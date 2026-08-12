@@ -19,23 +19,23 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en" data-theme="dark">
-      <body className="min-h-screen bg-[#0A0A0A] font-sans text-[#F6F2EA] flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-6 rounded-xl border border-dashed border-red-500/40 bg-red-950/20 p-10 text-center max-w-md w-full">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-red-950 text-red-400">
+    <html lang="en" data-theme="light">
+      <body className="min-h-screen bg-[#F6F2EA] font-sans text-[#171412] flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-6 rounded-xl border border-dashed border-red-500/40 bg-red-50 p-10 text-center max-w-md w-full">
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-red-100 text-red-600">
             <AlertTriangle className="h-7 w-7" aria-hidden />
           </span>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold tracking-tight">
               Something went wrong
             </h2>
-            <p className="text-sm text-[#AAAAAA]">
+            <p className="text-sm text-[#5A544F]">
               {error?.message ?? 'An unexpected error occurred.'}
             </p>
           </div>
           <button
             onClick={reset}
-            className="inline-flex items-center gap-2 rounded-md bg-[#F6F2EA] px-5 py-2.5 text-sm font-medium text-[#0A0A0A] hover:opacity-80 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-md bg-[#171412] px-5 py-2.5 text-sm font-medium text-[#F6F2EA] hover:opacity-80 transition-opacity"
           >
             <RefreshCw className="h-4 w-4" aria-hidden />
             Try again

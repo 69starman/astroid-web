@@ -15,14 +15,13 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      mode: 'dark',
+      mode: 'light',
       highContrast: false,
       reducedMotion: false,
       setMode: (mode) => set({ mode }),
-
       toggleContrast: () => set((s) => ({ highContrast: !s.highContrast })),
       toggleReducedMotion: () => set((s) => ({ reducedMotion: !s.reducedMotion })),
     }),
-    { name: 'astroid-theme' },
+    { name: 'astroid-theme-v2' },
   ),
 );
