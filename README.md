@@ -1,60 +1,87 @@
 # astroid-web
 
-> Next.js frontend and design system — the **presentation layer** of Astroid, the Financial Operating System for autonomous AI agents on Stellar.
+[![CI](https://github.com/ASTROIDX556/astroid-web/actions/workflows/ci.yml/badge.svg)](https://github.com/ASTROIDX556/astroid-web/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Stellar](https://img.shields.io/badge/Built%20on-Stellar-7C3AED)](https://stellar.org)
+[![Drips Wave](https://img.shields.io/badge/Drips-Stellar%20Wave-blue)](https://www.drips.network/wave/stellar)
 
-An editorial financial dashboard for governing autonomous AI spend: agents, wallets, policies, budgets, approvals, transactions, memory, risk analytics, and audit history. Restrained and typographic — oversized display numbers, gold used sparingly, hairline dividers, illustrated empty states, and deltas that always carry text or an arrow, never color alone.
+> Next.js dashboard — the **human control plane** of Astroid, the Financial Operating System for autonomous AI agents on Stellar. Built for the [Drips Stellar Wave Program](https://www.drips.network/wave/stellar).
 
-## Highlights
+`astroid-web` is the interface through which organizations govern their AI agents. Humans set budgets, define spending policies, approve high-value transactions, and audit every action — the AI agents operate within those constraints on-chain.
 
-- **Next.js 14 App Router** with a `(dashboard)` route group; 22 pages across list and detail views.
-- **Bespoke design system** — a warm-neutral palette with a gold accent, custom Tailwind tokens, `framer-motion`, and hand-drawn illustrations. Design tokens are the single source of truth (see `tailwind.config.ts`).
-- **Data layer** — TanStack Query hooks over a typed service layer. **No backend required to run:** when `NEXT_PUBLIC_API_URL` is unset, a complete mock dataset renders every screen.
-- **Strict TypeScript** — `noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitOverride`. No `any`, no placeholder content.
+## Features
 
-## Quick start
+- **Agent management** — create, configure, and monitor AI agents with provider/model selection (Nvidia, OpenAI, Anthropic, Gemini, Ollama, Custom)
+- **Wallet dashboard** — Stellar wallet balances, transaction history, and XDR signing
+- **Policy engine UI** — create spending rules and simulate them against proposed transactions
+- **Approval workflows** — multi-party proposal review with approve/reject controls
+- **Budget tracking** — department-level budgets with real-time consumption meters
+- **AI assistant** — Nvidia NIM-powered chat with financial briefings and anomaly alerts
+- **Audit log** — immutable log of every agent action and governance decision
+- **Developer portal** — API keys and webhook management
+- **Live / mock mode** — set `NEXT_PUBLIC_API_URL` to switch from local fixtures to the live API automatically
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript (strict) |
+| Styling | Vanilla CSS + CSS variables |
+| Data fetching | TanStack Query v5 |
+| SDK | `@astroid/sdk` (internal monorepo) |
+| Animation | CSS transitions + custom chameleon cursor |
+
+## Quick Start
 
 ```bash
 npm install
-cp .env.example .env.local      # optional — leave NEXT_PUBLIC_API_URL empty for mock mode
-npm run dev                     # http://localhost:3001
+cp .env.local.example .env.local   # set NEXT_PUBLIC_API_URL
+
+npm run dev       # http://localhost:3001
 ```
 
-Point it at a live backend by setting `NEXT_PUBLIC_API_URL` (see [`astroid-api`](https://github.com/ASTROIDX556/astroid-api)):
+> **No backend?** Leave `NEXT_PUBLIC_API_URL` empty and the app runs in mock mode — every screen renders realistic fixture data with simulated latency. No network calls are made.
 
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_API_VERSION=/api/v1
-```
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Yes (prod) | Base URL of `astroid-api`, e.g. `https://api.example.com` |
+| `NEXT_PUBLIC_API_VERSION` | No | API version prefix, defaults to `/api/v1` |
 
 ## Scripts
 
 | Script | Purpose |
-| --- | --- |
-| `npm run dev` | Dev server |
+|---|---|
+| `npm run dev` | Dev server on `localhost:3001` |
 | `npm run build` | Production build |
-| `npm run start` | Serve the production build |
+| `npm run start` | Run production build |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | `next lint` |
+| `npm run lint` | ESLint |
 
-## Structure
+## Related Repositories
 
-```
-src/
-  app/(dashboard)/   route group — overview, agents, wallets, policies, budgets,
-                     transactions, approvals, memory, analytics, audit,
-                     notifications, developers, settings (+ [id] detail pages)
-  components/        ui/ · dashboard/ · charts/ · layout/ · shell/ · illustrations
-  hooks/             TanStack Query hooks (use-queries)
-  services/          typed API client + mock/ dataset
-  lib/               format, status, and utility helpers
-  stores/            Zustand stores
-  styles/            globals.css + design tokens
-```
+| Repo | Description |
+|---|---|
+| [astroid-api](https://github.com/ASTROIDX556/astroid-api) | NestJS backend |
+| [astroid-contract](https://github.com/ASTROIDX556/astroid-contract) | Soroban smart contracts |
+| [astroid-sdk](https://github.com/ASTROIDX556/astroid-sdk) | TypeScript SDK and React hooks |
 
-## Tech stack
+## Maintainers
 
-Next.js 14 · React 18 · TypeScript (strict) · Tailwind CSS · TanStack Query & Table · Zustand · React Hook Form + Zod · Recharts · framer-motion · lucide-react · sonner.
+| Name | GitHub | Contact |
+|---|---|---|
+| Astroid Team | [@ASTROIDX556](https://github.com/ASTROIDX556) | Open an issue or discussion |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). PRs require passing `build`, `typecheck`, and `lint`.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the responsible disclosure policy.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Part of the [Astroid](https://github.com/ASTROIDX556) open-source platform.
+MIT — see [LICENSE](LICENSE).
