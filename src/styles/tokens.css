@@ -7,52 +7,53 @@
  */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Foundation palette (90% of the interface) */
-  --background-primary: 246 242 234; /* #F6F2EA */
-  --background-secondary: 239 233 221; /* #EFE9DD */
-  --surface-primary: 255 253 248; /* #FFFDF8 */
-  --surface-secondary: 232 224 210; /* #E8E0D2 */
-  --text-primary: 23 20 18; /* #171412 */
-  --text-secondary: 90 84 79; /* #5A544F */
-  --text-muted: 138 131 123; /* #8A837B */
-  --border: 216 204 188; /* #D8CCBC */
-  --border-strong: 201 187 166; /* #C9BBA6 */
+  /* Foundation palette (90% of the interface) — Sleek Dark Mode Default */
+  --background-primary: 10 10 10; /* #0A0A0A */
+  --background-secondary: 6 6 6; /* #060606 */
+  --surface-primary: 18 18 18; /* #121212 */
+  --surface-secondary: 26 26 26; /* #1A1A1A */
+  --text-primary: 246 242 234; /* #F6F2EA */
+  --text-secondary: 170 170 170; /* #AAAAAA */
+  --text-muted: 120 120 120; /* #787878 */
+  --border: 38 38 38; /* #262626 */
+  --border-strong: 55 55 55; /* #373737 */
 
-  /* Signature accent — Electric Indigo-Violet (AI Intelligence / Stellar Network) */
-  --gold: 91 80 214; /* #5B50D6 — deep electric indigo, warm-tone harmonious */
-  --gold-soft: 236 234 252; /* #ECEAFC — barely-there indigo tint */
-  --gold-strong: 68 58 178; /* #443AB2 — pressed state */
-  --gold-foreground: 255 255 255; /* text on accent */
+  /* Signature accent — Luminous Electric Indigo */
+  --gold: 139 127 255; /* #8B7FFF */
+  --gold-soft: 28 26 56; /* #1C1A38 */
+  --gold-strong: 167 157 255; /* #A79DFF */
+  --gold-foreground: 13 11 9;
 
   /* Functional colors */
-  --success: 47 143 99; /* #2F8F63 */
-  --success-soft: 220 238 228;
-  --warning: 217 138 33; /* #D98A21 */
-  --warning-soft: 246 231 204;
-  --danger: 200 71 71; /* #C84747 */
-  --danger-soft: 243 218 216;
-  --info: 43 127 255; /* #2B7FFF */
-  --info-soft: 217 231 255;
+  --success: 63 169 120;
+  --success-soft: 22 39 31;
+  --warning: 227 154 58;
+  --warning-soft: 44 35 18;
+  --danger: 224 106 106;
+  --danger-soft: 46 27 27;
+  --info: 76 147 255;
+  --info-soft: 20 32 58;
 
   /* Focus ring — Indigo */
-  --ring: 91 80 214;
-  --shadow-color: 23 20 18;
+  --ring: 139 127 255;
+  --shadow-color: 0 0 0;
 
-  /* Chart palette — validated (dataviz skill) against surface #FFFDF8 */
-  --chart-surface: 255 253 248;
-  --chart-1: 42 120 214; /* #2a78d6 blue */
-  --chart-2: 235 104 52; /* #eb6834 orange */
-  --chart-3: 27 175 122; /* #1baf7a aqua */
-  --chart-4: 237 161 0; /* #eda100 yellow */
-  --chart-5: 232 123 164; /* #e87ba4 magenta */
-  --chart-6: 0 131 0; /* #008300 green */
-  --chart-7: 74 58 167; /* #4a3aa7 violet */
-  --chart-8: 227 73 72; /* #e34948 red */
-  --chart-grid: 231 223 209; /* hairline */
-  --chart-axis: 201 187 166;
+  /* Chart palette */
+  --chart-surface: 26 22 19;
+  --chart-1: 57 135 229;
+  --chart-2: 217 89 38;
+  --chart-3: 25 158 112;
+  --chart-4: 201 133 0;
+  --chart-5: 213 81 129;
+  --chart-6: 0 131 0;
+  --chart-7: 144 133 233;
+  --chart-8: 230 103 103;
+  --chart-grid: 44 44 42;
+  --chart-axis: 56 56 53;
 }
+
 
 [data-theme='dark'] {
   color-scheme: dark;

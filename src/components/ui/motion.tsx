@@ -65,18 +65,22 @@ import { useEffect, useState } from 'react';
 import { useSpring } from 'framer-motion';
 
 export const AnimatedNumber = ({ value, formatter }: { value: number, formatter: (val: number) => string }) => {
-  const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
-  const [display, setDisplay] = useState(formatter(value));
+  const safeValue = typeof value === 'number' && isFinite(value) ? value : 0;
+  const spring = useSpring(safeValue, { mass: 0.8, stiffness: 75, damping: 15 });
+  const [display, setDisplay] = useState(() => {
+    try { return formatter(safeValue); } catch { return '—'; }
+  });
 
   useEffect(() => {
-    spring.set(value);
-  }, [value, spring]);
+    spring.set(safeValue);
+  }, [safeValue, spring]);
 
   useEffect(() => {
     return spring.on('change', (latest) => {
-      setDisplay(formatter(latest));
+      try { setDisplay(formatter(latest)); } catch { setDisplay('—'); }
     });
   }, [spring, formatter]);
 
   return <span>{display}</span>;
 };
+

@@ -15,10 +15,11 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      mode: 'system',
+      mode: 'dark',
       highContrast: false,
       reducedMotion: false,
       setMode: (mode) => set({ mode }),
+
       toggleContrast: () => set((s) => ({ highContrast: !s.highContrast })),
       toggleReducedMotion: () => set((s) => ({ reducedMotion: !s.reducedMotion })),
     }),

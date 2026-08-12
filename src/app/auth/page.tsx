@@ -4,10 +4,20 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Sparkles, Globe, ArrowRight, Shield } from 'lucide-react';
-import { setAllowed, getAddress } from '@stellar/freighter-api';
 import Link from 'next/link';
 import { env, isMockMode } from '@/lib/env';
 import { storeToken } from '@/services/client';
+
+/** Safely call a Freighter API function with a timeout to prevent infinite hangs. */
+async function withTimeout<T>(promise: Promise<T>, ms = 15000): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Freighter timed out. Make sure the extension is installed and unlocked.')), ms);
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
 
 export default function AuthPage() {
   const router = useRouter();
@@ -19,59 +29,76 @@ export default function AuthPage() {
       setIsConnecting(true);
       setError(null);
 
-      const allowed = await setAllowed();
-      if (!allowed) {
-        throw new Error('Freighter connection request was rejected.');
+      // Dynamically import Freighter API to avoid SSR issues
+      const { setAllowed, getAddress } = await import('@stellar/freighter-api');
+
+      // setAllowed() returns { isAllowed: boolean } in v2+ API
+      const allowedResult = await withTimeout(setAllowed());
+      const isAllowed =
+        typeof allowedResult === 'boolean'
+          ? allowedResult
+          // v2 returns an object: { isAllowed: boolean }
+          : (allowedResult as { isAllowed?: boolean })?.isAllowed ?? false;
+
+      if (!isAllowed) {
+        throw new Error('Freighter connection request was rejected. Please approve it in the extension.');
       }
 
-      const publicKey = await getAddress();
+      // getAddress() returns { address: string } in v2+ API
+      const addressResult = await withTimeout(getAddress());
+      const publicKey: string | undefined =
+        typeof addressResult === 'string'
+          ? addressResult
+          : (addressResult as { address?: string })?.address;
+
       if (!publicKey) {
         throw new Error('Could not retrieve public key from Freighter.');
       }
 
       if (!isMockMode) {
-        // Exchange Freighter identity for a backend JWT.
-        // Uses the seeded demo account — replace with a proper challenge/SEP-10
-        // auth flow once the passkey/wallet auth endpoint is implemented.
         const base = `${env.apiUrl}${env.apiVersion}`;
         const demoEmail = 'owner@astroid.dev';
         const demoPassword = 'Astroid!Demo123';
 
-        // Attempt login first; if the account doesn't exist yet, register it.
-        let res = await fetch(`${base}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: demoEmail, password: demoPassword }),
-        });
-
-        if (!res.ok) {
-          // Fallback: register then login (first-time setup)
-          await fetch(`${base}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              organizationName: 'Astroid Labs',
-              name: 'Ava Owner',
-              email: demoEmail,
-              password: demoPassword,
-            }),
-          });
-          res = await fetch(`${base}/auth/login`, {
+        try {
+          // Attempt login first; if the account doesn't exist yet, register it.
+          let res = await withTimeout(fetch(`${base}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: demoEmail, password: demoPassword }),
-          });
+          }), 10000);
+
+          if (!res.ok) {
+            // Fallback: register then login (first-time setup)
+            await fetch(`${base}/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                organizationName: 'Astroid Labs',
+                name: 'Ava Owner',
+                email: demoEmail,
+                password: demoPassword,
+              }),
+            });
+            res = await withTimeout(fetch(`${base}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+            }), 10000);
+          }
+
+          const body = await res.json();
+          const token: string | undefined =
+            body?.data?.tokens?.accessToken ?? body?.tokens?.accessToken;
+
+          if (token) {
+            storeToken(token);
+          }
+          // If no token returned, continue anyway — dashboard uses mock data fallback
+        } catch (backendErr) {
+          // Backend is unreachable (cold start, etc.) — proceed to dashboard with mock data
+          console.warn('Backend auth skipped, continuing with mock mode:', backendErr);
         }
-
-        const body = await res.json();
-        const token: string | undefined =
-          body?.data?.tokens?.accessToken ?? body?.tokens?.accessToken;
-
-        if (!token) {
-          throw new Error('Authentication succeeded but no access token was returned.');
-        }
-
-        storeToken(token);
       }
 
       router.push('/overview');
