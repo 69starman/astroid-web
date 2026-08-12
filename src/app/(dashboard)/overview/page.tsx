@@ -21,14 +21,18 @@ import { CATEGORICAL } from '@/components/charts';
 import { useOverview, useBriefing } from '@/hooks/use-queries';
 import { useAssistantStore } from '@/stores/ui-store';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
-import type { AiInsightSeverity } from '@/types/domain';
 import { PageTransition } from '@/components/ui/motion';
 
-const severityBadge: Record<AiInsightSeverity, 'info' | 'success' | 'warning' | 'danger'> = {
+
+const severityBadge: Record<string, 'info' | 'success' | 'warning' | 'danger'> = {
   info: 'info',
   success: 'success',
   warning: 'warning',
   danger: 'danger',
+  low: 'info',
+  medium: 'warning',
+  high: 'danger',
+  critical: 'danger',
 };
 
 export default function OverviewPage() {
@@ -64,7 +68,7 @@ export default function OverviewPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Total balance"
-              rawNumber={data.totalBalance}
+              rawNumber={data?.totalBalance ?? 0}
               formatter={(val) => formatCurrency(val, 'USD', { compact: true })}
               icon={<WalletIcon className="h-4 w-4" />}
               accent
@@ -72,9 +76,9 @@ export default function OverviewPage() {
             />
             <StatCard
               label="Monthly spend"
-              rawNumber={data.monthlySpend}
+              rawNumber={data?.monthlySpend ?? 0}
               formatter={(val) => formatCurrency(val, 'USD', { compact: true })}
-              delta={data.monthlySpendDelta}
+              delta={data?.monthlySpendDelta}
               deltaLabel="vs last month"
               upIsGood={false}
               icon={<TrendingDown className="h-4 w-4" />}
@@ -82,7 +86,7 @@ export default function OverviewPage() {
             />
             <StatCard
               label="Active agents"
-              rawNumber={data.activeAgents}
+              rawNumber={data?.activeAgents ?? 0}
               formatter={(val) => formatNumber(val)}
               icon={<Bot className="h-4 w-4" />}
               footer="Executing this month"
@@ -90,7 +94,7 @@ export default function OverviewPage() {
             />
             <StatCard
               label="Pending approvals"
-              rawNumber={data.pendingApprovals}
+              rawNumber={data?.pendingApprovals ?? 0}
               formatter={(val) => formatNumber(val)}
               icon={<ShieldAlert className="h-4 w-4" />}
               footer="Awaiting your review"
@@ -114,7 +118,7 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent>
             <QueryBoundary query={overview} loading={<div className="skeleton h-[260px] w-full rounded-md" />}>
-              {(data) => <CashflowChart data={data.cashflow} />}
+              {(data) => <CashflowChart data={data?.cashflow} />}
             </QueryBoundary>
           </CardContent>
         </Card>
@@ -142,20 +146,20 @@ export default function OverviewPage() {
               {(data) => (
                 <div className="space-y-4">
                   <div>
-                    <p className="font-display text-base font-semibold">{data.greeting}</p>
+                    <p className="font-display text-base font-semibold">{data?.greeting ?? 'Financial Executive Briefing'}</p>
                     <p className="mt-1 text-xs leading-relaxed text-foreground-secondary">
-                      {data.summary}
+                      {data?.summary ?? 'Treasury systems operating normally.'}
                     </p>
                   </div>
                   <ul className="space-y-2.5">
-                    {data.insights.slice(0, 3).map((insight) => (
+                    {(data?.insights ?? []).slice(0, 3).map((insight) => (
                       <li
                         key={insight.id}
                         className="rounded-sm border border-border bg-surface/60 p-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-medium text-foreground">{insight.title}</p>
-                          <Badge variant={severityBadge[insight.severity]} size="sm">
+                          <Badge variant={severityBadge[insight.severity] ?? 'info'} size="sm">
                             {insight.severity}
                           </Badge>
                         </div>
@@ -183,7 +187,7 @@ export default function OverviewPage() {
                     Open assistant
                   </Button>
                   <p className="text-center text-2xs text-foreground-muted">
-                    Generated {formatRelativeTime(data.generatedAt)}
+                    Generated {data?.generatedAt ? formatRelativeTime(data.generatedAt) : 'just now'}
                   </p>
                 </div>
               )}
@@ -200,7 +204,7 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent>
             <QueryBoundary query={overview} loading={<div className="skeleton h-[260px] w-full rounded-md" />}>
-              {(data) => <CategoryBarChart data={data.spendingByCategory} />}
+              {(data) => <CategoryBarChart data={data?.spendingByCategory} />}
             </QueryBoundary>
           </CardContent>
         </Card>
@@ -212,12 +216,13 @@ export default function OverviewPage() {
           <CardContent>
             <QueryBoundary query={overview} loading={<div className="skeleton h-[220px] w-full rounded-md" />}>
               {(data) => {
-                const donut: DonutDatum[] = data.riskDistribution.map((r, i) => ({
+                const list = data?.riskDistribution ?? [];
+                const donut: DonutDatum[] = list.map((r, i) => ({
                   name: r.level,
                   value: r.count,
                   color: CATEGORICAL[i % CATEGORICAL.length],
                 }));
-                const total = data.riskDistribution.reduce((sum, r) => sum + r.count, 0);
+                const total = list.reduce((sum, r) => sum + r.count, 0);
                 return (
                   <DonutChart
                     data={donut}
@@ -237,7 +242,7 @@ export default function OverviewPage() {
           {(data) => (
             <Card>
               <CardContent className="divide-y divide-border p-0">
-                {data.agentSpend.map((agent) => (
+                {(data?.agentSpend ?? []).map((agent) => (
                   <Link
                     key={agent.agentId}
                     href={`/agents/${agent.agentId}`}
@@ -264,6 +269,7 @@ export default function OverviewPage() {
           )}
         </QueryBoundary>
       </div>
+
     </PageTransition>
   );
 }
