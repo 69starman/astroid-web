@@ -44,7 +44,7 @@ export function QueryBoundary<T>({
     <AnimatePresence mode="wait">
       {query.isPending ? (
         <Fade keyName="loading">{loading}</Fade>
-      ) : query.isError ? (
+      ) : query.isError || query.data === undefined || query.data === null ? (
         <Fade keyName="error">
           <div className="flex flex-col items-center gap-4 rounded-card border border-dashed border-danger/40 bg-danger-soft/30 p-10 text-center">
             <AlertTriangle className="h-8 w-8 text-danger" aria-hidden />
@@ -66,8 +66,9 @@ export function QueryBoundary<T>({
       ) : isEmpty && empty && isEmpty(query.data) ? (
         <Fade keyName="empty">{empty}</Fade>
       ) : (
-        <Fade keyName="content">{children(query.data)}</Fade>
+        <Fade keyName="content">{children(query.data!)}</Fade>
       )}
     </AnimatePresence>
+
   );
 }
