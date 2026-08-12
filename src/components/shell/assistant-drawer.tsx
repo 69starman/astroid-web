@@ -6,7 +6,9 @@ import { useAssistantStore } from '@/stores/ui-store';
 import { useAssistantSeed, useBriefing } from '@/hooks/use-queries';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/cn';
+import { env, isMockMode } from '@/lib/env';
 import type { ChatMessage } from '@/types/domain';
+
 
 /**
  * Slide-over AI assistant. Seeds from the mock conversation and the daily
@@ -45,23 +47,45 @@ export function AssistantDrawer() {
     return () => document.removeEventListener('keydown', onKey);
   }, [setOpen]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    const stamp = new Date(0).toISOString();
-    setMessages((prev) => [
-      ...prev,
-      { id: `local-u-${prev.length}`, role: 'user', content: trimmed, createdAt: stamp },
-      {
-        id: `local-a-${prev.length}`,
-        role: 'assistant',
-        content:
-          'I can help with that. In this preview the assistant is running in mock mode, so I can outline the steps but not execute live actions yet.',
-        createdAt: stamp,
-      },
-    ]);
+    const stamp = new Date().toISOString();
+    const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', content: trimmed, createdAt: stamp };
+    setMessages((prev) => [...prev, userMsg]);
     setDraft('');
+
+    if (isMockMode) {
+      const mockReply: ChatMessage = {
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        content: 'I can help with that. In this preview the assistant is running in mock mode — set NEXT_PUBLIC_API_URL to connect to the live API.',
+        createdAt: stamp,
+      };
+      setMessages((prev) => [...prev, mockReply]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${env.apiUrl}${env.apiVersion}/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed }),
+      });
+      const body = await res.json();
+      const reply = body?.data?.reply ?? body?.reply ?? 'No response from AI.';
+      setMessages((prev) => [
+        ...prev,
+        { id: `a-${Date.now()}`, role: 'assistant', content: reply, createdAt: new Date().toISOString() },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: `a-err-${Date.now()}`, role: 'assistant', content: 'Failed to reach the AI service. Check the API connection.', createdAt: new Date().toISOString() },
+      ]);
+    }
   };
+
 
   const suggestions = briefingQuery.data?.suggestedActions ?? [];
 
