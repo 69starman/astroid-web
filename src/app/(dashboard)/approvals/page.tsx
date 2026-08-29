@@ -17,6 +17,7 @@ import { useProposals } from '@/hooks/use-queries';
 import { proposalStatus } from '@/lib/status';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
 import { PageTransition } from '@/components/ui/motion';
+import { MultisigReviewCard } from '@/features/multisig';
 
 export default function ApprovalsPage() {
   const proposals = useProposals();
@@ -123,6 +124,12 @@ export default function ApprovalsPage() {
                             <ArrowUpRight className="h-3 w-3" aria-hidden />
                           </Link>
                         </div>
+
+                        {proposal.kind === 'multisig' && (
+                          <div className="mt-4">
+                            <MultisigReviewCard proposal={proposal} />
+                          </div>
+                        )}
                       </CardContent>
                       {isPending && (
                         <CardFooter>

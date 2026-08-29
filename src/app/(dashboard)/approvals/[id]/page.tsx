@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/cn';
 import { useProposal } from '@/hooks/use-queries';
+import { MultisigReviewCard } from '@/features/multisig';
 import { proposalStatus } from '@/lib/status';
 import { formatCurrency, formatDateTime, formatRelativeTime } from '@/lib/format';
 import type { ApprovalDecision } from '@/types/domain';
@@ -121,6 +122,8 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
                   </CardFooter>
                 )}
               </Card>
+
+              {data.kind === 'multisig' && <MultisigReviewCard proposal={data} />}
 
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Approval timeline */}
