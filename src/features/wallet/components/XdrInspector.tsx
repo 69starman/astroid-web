@@ -16,32 +16,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/input';
 import { cn } from '@/lib/cn';
-
-export interface OperationSummary {
-  type: string;
-  source?: string;
-  destination?: string;
-  amount?: string;
-  asset?: string;
-}
-
-export interface SignatureSummary {
-  publicKey: string;
-  hint: string;
-}
-
-export interface ParsedEnvelope {
-  valid: boolean;
-  sourceAccount: string;
-  fee: string;
-  sequenceNumber: string;
-  operationCount: number;
-  operations: OperationSummary[];
-  signatures: SignatureSummary[];
-  networkPassphrase: string;
-  message: string;
-  warning?: string;
-}
+import { parseEnvelope } from '../utils/xdrEnvelope';
+export type {
+  OperationSummary,
+  SignatureSummary,
+  ParsedEnvelope,
+} from '../utils/xdrEnvelope';
 
 const SAMPLE_XDRS = [
   {
@@ -69,8 +49,14 @@ const SAMPLE_XDRS = [
         },
       ],
       signatures: [
-        { publicKey: 'GD2E5MGVZ4XGIVLNCF4YBZV3JR5M2U3A2P6Q4Y4M7P6KOCZQ7W6I3Q4', hint: 'ed25519' },
-        { publicKey: 'GBR4SQR6S5XRK6A4EYJ4JP5XXCGQH2NHSXG6B6HMSN7YGBV2E5P2F3S', hint: 'ed25519' },
+        {
+          publicKey: 'GD2E5MGVZ4XGIVLNCF4YBZV3JR5M2U3A2P6Q4Y4M7P6KOCZQ7W6I3Q4',
+          hint: 'ed25519',
+        },
+        {
+          publicKey: 'GBR4SQR6S5XRK6A4EYJ4JP5XXCGQH2NHSXG6B6HMSN7YGBV2E5P2F3S',
+          hint: 'ed25519',
+        },
       ],
       networkPassphrase: 'Public Global Stellar Network ; September 2015',
     }),
@@ -84,12 +70,28 @@ const SAMPLE_XDRS = [
       sequenceNumber: '314159265',
       operationCount: 3,
       operations: [
-        { type: 'PathPaymentStrictReceive', source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ', destination: 'GD7S2XPI5TUFJSNJH4LMJ4T3K6NQJ5J4JYJ6', amount: '250.00', asset: 'XLM' },
-        { type: 'ManageData', source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ', asset: 'route_id' },
-        { type: 'SetOptions', source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ' },
+        {
+          type: 'PathPaymentStrictReceive',
+          source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ',
+          destination: 'GD7S2XPI5TUFJSNJH4LMJ4T3K6NQJ5J4JYJ6',
+          amount: '250.00',
+          asset: 'XLM',
+        },
+        {
+          type: 'ManageData',
+          source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ',
+          asset: 'route_id',
+        },
+        {
+          type: 'SetOptions',
+          source: 'GBY2VQKQEVUXJN4YFOMKE5S6P3D2D3NKW7O4WCL6KUQY2O2D6P5R7QYQ',
+        },
       ],
       signatures: [
-        { publicKey: 'GABK7V4KJ7V3S2PQJ3S7EWQ7T5Y7N7ZW6Z4N2V7V7K2DU5Y4B4A5IQ', hint: 'ed25519' },
+        {
+          publicKey: 'GABK7V4KJ7V3S2PQJ3S7EWQ7T5Y7N7ZW6Z4N2V7V7K2DU5Y4B4A5IQ',
+          hint: 'ed25519',
+        },
       ],
       networkPassphrase: 'Test SDF Network ; September 2015',
     }),
@@ -109,142 +111,6 @@ function stringToBase64(value: string): string {
 
 function buildSampleEnvelope(data: Record<string, unknown>): string {
   return stringToBase64(JSON.stringify({ type: 'TransactionEnvelope', ...data }));
-}
-
-function decodeBase64ToUtf8(value: string): { valid: boolean; text: string; message?: string } {
-  const cleaned = value.trim();
-
-  if (!cleaned) {
-    return { valid: false, text: '', message: 'Paste a base64-encoded transaction envelope to inspect it.' };
-  }
-
-  if (!/^[A-Za-z0-9+/=_\-\s]+$/.test(cleaned)) {
-    return {
-      valid: false,
-      text: '',
-      message: 'This does not look like a valid Stellar XDR payload. Use a base64 string only.',
-    };
-  }
-
-  try {
-    const normalized = cleaned.replace(/\s+/g, '');
-    const binary = typeof window !== 'undefined' && typeof window.atob === 'function'
-      ? window.atob(normalized)
-      : Buffer.from(normalized, 'base64').toString('binary');
-
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    const text = new TextDecoder('utf-8').decode(bytes);
-
-    if (!text || !text.trim()) {
-      return { valid: false, text: '', message: 'The XDR could not be decoded into a readable payload.' };
-    }
-
-    return { valid: true, text };
-  } catch {
-    return { valid: false, text: '', message: 'The supplied XDR is not valid base64 and could not be decoded safely.' };
-  }
-}
-
-function parseEnvelope(value: string): ParsedEnvelope {
-  const { valid: base64Valid, text, message } = decodeBase64ToUtf8(value);
-
-  if (!base64Valid || !text) {
-    const fallback = value.trim();
-    const looksLikeBase64 = !!fallback && /^[A-Za-z0-9+/=_\-\s]+$/.test(fallback);
-
-    return {
-      valid: false,
-      sourceAccount: 'Unknown',
-      fee: '—',
-      sequenceNumber: '—',
-      operationCount: 0,
-      operations: [],
-      signatures: [],
-      networkPassphrase: '—',
-      message: message ?? 'Invalid XDR payload.',
-      warning: looksLikeBase64
-        ? 'Base64 structure looks valid, but it does not contain a recognizable Stellar transaction envelope.'
-        : 'The value is not valid base64 or is too short to be a transaction envelope.',
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(text) as Record<string, unknown>;
-    const transaction =
-      typeof parsed.transaction === 'object' && parsed.transaction !== null ? parsed.transaction as Record<string, unknown> : parsed;
-
-    const operations = Array.isArray(transaction.operations)
-      ? transaction.operations.map((operation, index) => {
-          const item = typeof operation === 'object' && operation !== null ? (operation as Record<string, unknown>) : {};
-          return {
-            type: typeof item.type === 'string' ? item.type : `Operation ${index + 1}`,
-            source: typeof item.source === 'string' ? item.source : undefined,
-            destination: typeof item.destination === 'string' ? item.destination : undefined,
-            amount: typeof item.amount === 'string' ? item.amount : undefined,
-            asset: typeof item.asset === 'string' ? item.asset : undefined,
-          } satisfies OperationSummary;
-        })
-      : [];
-
-    const signatures = Array.isArray(transaction.signatures)
-      ? transaction.signatures.map((signature) => {
-          const item = typeof signature === 'object' && signature !== null ? (signature as Record<string, unknown>) : {};
-          return {
-            publicKey: typeof item.publicKey === 'string' ? item.publicKey : 'Unknown signer',
-            hint: typeof item.hint === 'string' ? item.hint : 'ed25519',
-          } satisfies SignatureSummary;
-        })
-      : [];
-
-    const sourceAccount =
-      typeof transaction.sourceAccount === 'string'
-        ? transaction.sourceAccount
-        : typeof transaction.source === 'string'
-          ? transaction.source
-          : 'Unknown';
-
-    const fee = typeof transaction.fee === 'string' || typeof transaction.fee === 'number'
-      ? String(transaction.fee)
-      : '100';
-
-    const sequenceNumber =
-      typeof transaction.sequenceNumber === 'string' || typeof transaction.sequenceNumber === 'number'
-        ? String(transaction.sequenceNumber)
-        : '0';
-
-    const networkPassphrase =
-      typeof transaction.networkPassphrase === 'string'
-        ? transaction.networkPassphrase
-        : 'Public Global Stellar Network ; September 2015';
-
-    return {
-      valid: true,
-      sourceAccount,
-      fee,
-      sequenceNumber,
-      operationCount: operations.length || Number(transaction.operationCount ?? 0),
-      operations,
-      signatures,
-      networkPassphrase,
-      message: 'XDR envelope decoded successfully.',
-    };
-  } catch {
-    const fallback = value.trim();
-    return {
-      valid: false,
-      sourceAccount: 'Unknown',
-      fee: '—',
-      sequenceNumber: '—',
-      operationCount: 0,
-      operations: [],
-      signatures: [],
-      networkPassphrase: '—',
-      message: 'This payload was base64-decoded, but it is not a recognizable transaction envelope.',
-      warning: fallback.length > 28
-        ? 'The base64 payload is structurally valid but does not match the expected mock transaction schema.'
-        : 'Use one of the sample XDR values or paste a valid base64 transaction envelope.',
-    };
-  }
 }
 
 function visibleKey(value: string): string {
@@ -267,10 +133,15 @@ export function XdrInspector() {
 
   const parsed = useMemo(() => parseEnvelope(xdr), [xdr]);
 
-  const selectedSample = SAMPLE_XDRS.find((sample) => sample.xdr === xdr)?.label ?? 'Custom XDR';
+  const selectedSample =
+    SAMPLE_XDRS.find((sample) => sample.xdr === xdr)?.label ?? 'Custom XDR';
 
   return (
-    <Card className="overflow-hidden border border-border bg-surface/80" role="region" aria-label="Stellar XDR inspector">
+    <Card
+      className="overflow-hidden border border-border bg-surface/80"
+      role="region"
+      aria-label="Stellar XDR inspector"
+    >
       <CardHeader className="border-b border-border bg-surface-secondary/60">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
@@ -279,7 +150,8 @@ export function XdrInspector() {
               <CardTitle className="text-base text-foreground">XDR inspector</CardTitle>
             </div>
             <p className="text-xs text-foreground-secondary">
-              Inspect transaction source, fee, sequence, operations, and signatures before signing.
+              Inspect transaction source, fee, sequence, operations, and signatures
+              before signing.
             </p>
           </div>
           <Badge
@@ -306,7 +178,7 @@ export function XdrInspector() {
             onChange={(event) => setXdr(event.target.value)}
             spellCheck={false}
             className={cn(
-              'min-h-[136px] w-full rounded-sm border border-border bg-surface px-3 py-2.5 font-mono text-[11px] leading-relaxed text-foreground placeholder:text-foreground-muted transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'py-2.5 min-h-[136px] w-full rounded-sm border border-border bg-surface px-3 font-mono text-[11px] leading-relaxed text-foreground transition-colors duration-fast placeholder:text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               !parsed.valid && 'border-danger/60',
             )}
             aria-invalid={!parsed.valid}
@@ -347,9 +219,11 @@ export function XdrInspector() {
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             )}
             <div>
-              <p className="font-medium">{parsed.valid ? 'Structured envelope preview' : 'Validation warning'}</p>
+              <p className="font-medium">
+                {parsed.valid ? 'Structured envelope preview' : 'Validation warning'}
+              </p>
               <p className="mt-0.5 text-[11px] opacity-90">
-                {parsed.valid ? parsed.message : parsed.warning ?? parsed.message}
+                {parsed.valid ? parsed.message : (parsed.warning ?? parsed.message)}
               </p>
             </div>
           </div>
@@ -364,25 +238,39 @@ export function XdrInspector() {
 
             <dl className="space-y-3" aria-live="polite">
               <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
-                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">Source account</dt>
+                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">
+                  Source account
+                </dt>
                 <dd className="max-w-[60%] truncate font-mono text-[11px] text-foreground">
                   {parsed.sourceAccount}
                 </dd>
               </div>
               <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
-                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">Fee</dt>
+                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">
+                  Fee
+                </dt>
                 <dd className="font-mono text-[11px] text-foreground">{parsed.fee}</dd>
               </div>
               <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
-                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">Sequence number</dt>
-                <dd className="font-mono text-[11px] text-foreground">{parsed.sequenceNumber}</dd>
+                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">
+                  Sequence number
+                </dt>
+                <dd className="font-mono text-[11px] text-foreground">
+                  {parsed.sequenceNumber}
+                </dd>
               </div>
               <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
-                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">Operations</dt>
-                <dd className="font-mono text-[11px] text-foreground">{parsed.operationCount}</dd>
+                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">
+                  Operations
+                </dt>
+                <dd className="font-mono text-[11px] text-foreground">
+                  {parsed.operationCount}
+                </dd>
               </div>
               <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
-                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">Network</dt>
+                <dt className="text-2xs uppercase tracking-wide text-foreground-secondary">
+                  Network
+                </dt>
                 <dd className="max-w-[60%] text-right font-mono text-[11px] text-foreground">
                   {parsed.networkPassphrase}
                 </dd>
@@ -404,7 +292,9 @@ export function XdrInspector() {
                     className="rounded-sm border border-border bg-surface-secondary px-2 py-2"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase tracking-wide text-foreground-secondary">Signature {index + 1}</span>
+                      <span className="text-[10px] uppercase tracking-wide text-foreground-secondary">
+                        Signature {index + 1}
+                      </span>
                       <Badge variant="success" size="sm">
                         {signature.hint}
                       </Badge>
@@ -416,7 +306,9 @@ export function XdrInspector() {
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-foreground-secondary">No signatures were decoded from the payload.</p>
+              <p className="text-xs text-foreground-secondary">
+                No signatures were decoded from the payload.
+              </p>
             )}
           </div>
         </div>
@@ -438,11 +330,15 @@ export function XdrInspector() {
                   >
                     <div className="flex items-center gap-2">
                       <Icon className="h-3.5 w-3.5 text-gold" aria-hidden />
-                      <span className="text-xs font-medium text-foreground">{operation.type}</span>
+                      <span className="text-xs font-medium text-foreground">
+                        {operation.type}
+                      </span>
                     </div>
                     <div className="mt-2 space-y-1 text-[11px] text-foreground-secondary">
                       {operation.source && <p>Source: {operation.source}</p>}
-                      {operation.destination && <p>Destination: {operation.destination}</p>}
+                      {operation.destination && (
+                        <p>Destination: {operation.destination}</p>
+                      )}
                       {operation.amount && <p>Amount: {operation.amount}</p>}
                       {operation.asset && <p>Asset: {operation.asset}</p>}
                     </div>
@@ -451,12 +347,15 @@ export function XdrInspector() {
               })}
             </ul>
           ) : (
-            <p className="text-xs text-foreground-secondary">No operation metadata was decoded from this XDR.</p>
+            <p className="text-xs text-foreground-secondary">
+              No operation metadata was decoded from this XDR.
+            </p>
           )}
         </div>
 
         <div className="rounded-md border border-border bg-surface-secondary/50 px-3 py-2 text-[11px] text-foreground-secondary">
-          Loaded sample: <span className="font-medium text-foreground">{selectedSample}</span>
+          Loaded sample:{' '}
+          <span className="font-medium text-foreground">{selectedSample}</span>
         </div>
       </CardContent>
     </Card>
