@@ -7,6 +7,8 @@ import { CommandDock } from '@/components/shell/command-dock';
 import { MobileNav } from '@/components/shell/mobile-nav';
 import { CommandPalette } from '@/components/shell/command-palette';
 import { AssistantDrawer } from '@/components/shell/assistant-drawer';
+import { usePreferencesStore, useHydrated } from '@/stores';
+import { cn } from '@/lib/cn';
 
 /**
  * The authenticated workspace shell: a slim utility top bar, the floating
@@ -18,8 +20,19 @@ import { AssistantDrawer } from '@/components/shell/assistant-drawer';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [navOpen, setNavOpen] = useState(false);
 
+  // Density is a persisted preference; gate the read so SSR markup always
+  // renders the default and upgrades after rehydration (no mismatch).
+  const hydrated = useHydrated();
+  const compact = usePreferencesStore((s) => s.density === 'compact');
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div
+      data-density={hydrated && compact ? 'compact' : 'comfortable'}
+      className={cn(
+        'flex min-h-screen flex-col bg-background',
+        hydrated && compact && 'text-[13px]',
+      )}
+    >
       <Topbar onOpenNav={() => setNavOpen(true)} />
 
       <main id="main-content" className="flex-1">
