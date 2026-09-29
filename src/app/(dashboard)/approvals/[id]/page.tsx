@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpRight, Check, Clock, X } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Check, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/dashboard/page-header';
 import { QueryBoundary } from '@/components/dashboard/query-boundary';
@@ -26,6 +26,8 @@ import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 import { FileSignature } from 'lucide-react';
 import { TransactionSigningModal } from '@/features/wallet/components/TransactionSigningModal';
 import { mockMultisigRequest } from '@/features/approvals/fixtures/multisig';
+import { XdrSigner } from '@/features/approvals/XdrSigner';
+import { ProposalAuditTrail } from '@/features/approvals/components/ProposalAuditTrail';
 
 const decisionMeta: Record<
   ApprovalDecision['decision'],
@@ -36,27 +38,6 @@ const decisionMeta: Record<
   delegated: { label: 'Delegated', className: 'text-info' },
   pending: { label: 'Awaiting', className: 'text-foreground-muted' },
 };
-
-function DecisionIcon({ decision }: { decision: ApprovalDecision['decision'] }) {
-  const base = 'grid h-8 w-8 place-items-center rounded-md border';
-  const styles: Record<ApprovalDecision['decision'], string> = {
-    approved: 'border-success/40 bg-success-soft text-success',
-    rejected: 'border-danger/40 bg-danger-soft text-danger',
-    delegated: 'border-info/40 bg-info-soft text-info',
-    pending: 'border-border bg-surface-secondary text-foreground-muted',
-  };
-  return (
-    <span className={cn(base, styles[decision])}>
-      {decision === 'approved' ? (
-        <Check className="h-4 w-4" aria-hidden />
-      ) : decision === 'rejected' ? (
-        <X className="h-4 w-4" aria-hidden />
-      ) : (
-        <Clock className="h-4 w-4" aria-hidden />
-      )}
-    </span>
-  );
-}
 
 export default function ApprovalDetailPage({ params }: { params: { id: string } }) {
   const proposal = useProposal(params.id);
@@ -179,53 +160,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
                   <SectionLabel>
                     Approval chain — {approved} of {data.requiredApprovals} satisfied
                   </SectionLabel>
-                  <Card className="p-5">
-                    <ol className="space-y-4">
-                      {data.approvals.map((decision, i) => {
-                        const meta = decisionMeta[decision.decision];
-                        return (
-                          <li key={decision.id} className="flex items-start gap-3">
-                            <div className="flex flex-col items-center">
-                              <DecisionIcon decision={decision.decision} />
-                              {i < data.approvals.length - 1 && (
-                                <span
-                                  className="mt-1 w-px flex-1 bg-border"
-                                  aria-hidden
-                                />
-                              )}
-                            </div>
-                            <div className="flex flex-1 items-start justify-between gap-4 pb-1">
-                              <div className="min-w-0 space-y-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-sm font-medium text-foreground">
-                                    {decision.userName}
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      'text-2xs font-medium',
-                                      meta.className,
-                                    )}
-                                  >
-                                    {meta.label}
-                                  </span>
-                                </div>
-                                {decision.comment && (
-                                  <p className="max-w-prose text-xs leading-relaxed text-foreground-secondary">
-                                    “{decision.comment}”
-                                  </p>
-                                )}
-                              </div>
-                              {decision.createdAt && (
-                                <span className="shrink-0 text-2xs text-foreground-muted">
-                                  {formatRelativeTime(decision.createdAt)}
-                                </span>
-                              )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </Card>
+                  <ProposalAuditTrail events={data.approvals} />
                 </div>
 
                 {/* Detail rail */}
