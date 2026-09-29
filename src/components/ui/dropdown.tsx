@@ -17,12 +17,25 @@ export interface DropdownProps {
   items: (DropdownItem | 'separator')[];
   align?: 'start' | 'end';
   className?: string;
+  /** Classes appended to the trigger button — used for shared focus rings. */
+  triggerClassName?: string;
+  /** Accessible name for the trigger button, e.g. "Switch organization". */
+  'aria-label'?: string;
 }
 
-/** Click-to-open menu with outside-click + Escape dismissal. */
-export function Dropdown({ trigger, items, align = 'end', className }: DropdownProps) {
+/** Shared, brand-tinted focus ring for menu items (WCAG AA). */
+const ITEM_FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset';
+
+/**
+ * Click-to-open menu with outside-click + Escape dismissal and full keyboard
+ * support: ArrowUp/ArrowDown move between items, Home/End jump to the first or
+ * last item, Enter/Space activate, and Tab closes without trapping focus.
+ */
+export function Dropdown({ trigger, items, align = 'end', className, triggerClassName, 'aria-label': ariaLabel }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -30,7 +43,10 @@ export function Dropdown({ trigger, items, align = 'end', className }: DropdownP
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setOpen(false);
+      }
     };
     document.addEventListener('mousedown', onClick);
     document.addEventListener('keydown', onKey);
@@ -40,20 +56,66 @@ export function Dropdown({ trigger, items, align = 'end', className }: DropdownP
     };
   }, [open]);
 
+  // Arrow-key navigation between menu items, per the WAI-ARIA menu pattern.
+  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+    const focusables = Array.from(
+      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])') ?? [],
+    );
+    if (focusables.length === 0) return;
+
+    const currentIndex = focusables.indexOf(document.activeElement as HTMLElement);
+    let nextIndex = currentIndex;
+    switch (e.key) {
+      case 'ArrowDown':
+        nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % focusables.length;
+        break;
+      case 'ArrowUp':
+        nextIndex = currentIndex < 0 ? focusables.length - 1 : (currentIndex - 1 + focusables.length) % focusables.length;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = focusables.length - 1;
+        break;
+    }
+    e.preventDefault();
+    focusables[nextIndex]?.focus();
+  };
+
+  // Focus the first item when opened via the keyboard, per the menu pattern.
+  const onTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if ((e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') && !open) {
+      e.preventDefault();
+      setOpen(true);
+      requestAnimationFrame(() => {
+        menuRef.current
+          ?.querySelector<HTMLElement>('[role="menuitem"]:not([disabled])')
+          ?.focus();
+      });
+    }
+  };
+
   return (
     <div ref={ref} className="relative inline-flex">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        onKeyDown={onTriggerKeyDown}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex focus-visible:outline-none"
+        aria-label={ariaLabel}
+        className={cn('inline-flex rounded-button', triggerClassName)}
       >
         {trigger}
       </button>
       {open && (
         <div
+          ref={menuRef}
           role="menu"
+          aria-label={ariaLabel ? `${ariaLabel} options` : undefined}
+          onKeyDown={onMenuKeyDown}
           className={cn(
             'glass absolute top-full z-50 mt-2 min-w-[200px] animate-fade-in overflow-hidden rounded-md p-1.5 shadow-soft-2',
             align === 'end' ? 'right-0' : 'left-0',
@@ -62,7 +124,7 @@ export function Dropdown({ trigger, items, align = 'end', className }: DropdownP
         >
           {items.map((item, i) => {
             if (item === 'separator') {
-              return <div key={`sep-${i}`} className="my-1 h-px bg-border" />;
+              return <div key={`sep-${i}`} className="my-1 h-px bg-border" role="separator" />;
             }
             const content = (
               <>
@@ -73,11 +135,12 @@ export function Dropdown({ trigger, items, align = 'end', className }: DropdownP
               </>
             );
             const classes = cn(
-              'flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-left text-xs font-medium transition-colors duration-fast focus-visible:outline-none focus-visible:bg-surface-secondary',
+              'flex w-full items-center gap-2.5 rounded-sm px-2.5 py-2 text-left text-xs font-medium transition-colors duration-fast',
               item.destructive
                 ? 'text-danger hover:bg-danger-soft'
                 : 'text-foreground hover:bg-surface-secondary',
               item.disabled && 'pointer-events-none opacity-50',
+              ITEM_FOCUS,
             );
             if (item.href) {
               return (
