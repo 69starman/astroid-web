@@ -26,7 +26,6 @@ import { PageTransition, AnimatedNumber } from '@/components/ui/motion';
 import { FileSignature } from 'lucide-react';
 import { TransactionSigningModal } from '@/features/wallet/components/TransactionSigningModal';
 import { mockMultisigRequest } from '@/features/approvals/fixtures/multisig';
-import { XdrSigner } from '@/features/approvals/XdrSigner';
 import { ProposalAuditTrail } from '@/features/approvals/components/ProposalAuditTrail';
 
 const decisionMeta: Record<
