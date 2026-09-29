@@ -85,3 +85,9 @@ See [SECURITY.md](SECURITY.md) for the responsible disclosure policy.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+Clarified local setup instructions for setting up developer environments.
+​Standardized error messaging components and fallbacks across the web app.
+​Enhanced security guidelines for cross-origin requests and token handling.
+​Resolved formatting inconsistencies across project documentation files.
+​Added step-by-step deployment instructions for hosting target environments.
+​Updated web performance tracking parameters and diagnostic metrics.
