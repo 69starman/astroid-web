@@ -15,6 +15,7 @@ import { useAgents } from '@/hooks/use-queries';
 import { agentStatus } from '@/lib/status';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
 import { PageTransition } from '@/components/ui/motion';
+import { AgentConfigForm } from '@/features/agents/AgentConfigForm';
 
 export default function AgentsPage() {
   const agents = useAgents();
@@ -47,6 +48,8 @@ export default function AgentsPage() {
       >
         {(data) => (
           <div className="space-y-6">
+            <AgentConfigForm />
+
             <SectionLabel>{data.length} agents</SectionLabel>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.map((agent) => {
