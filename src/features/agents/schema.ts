@@ -1,17 +1,20 @@
 import { z } from 'zod';
 
 /**
- * Providers supported by the agent configuration form. Mirrors the
+ * Providers supported by the agent configuration forms. Mirrors the
  * `provider` union on the Agent domain model (`@/types/domain`).
  */
-export const AGENT_PROVIDER_IDS = [
-  'Nvidia',
+export const providerOptions = [
   'OpenAI',
   'Anthropic',
   'Gemini',
+  'Nvidia',
   'Ollama',
   'Custom',
 ] as const;
+
+/** Providers supported by the agent configuration form (same set, form-facing alias). */
+export const AGENT_PROVIDER_IDS = providerOptions;
 
 export type AgentProviderId = (typeof AGENT_PROVIDER_IDS)[number];
 
@@ -39,6 +42,29 @@ const CUSTOM_ENDPOINT_PROVIDERS: readonly AgentProviderId[] = ['Ollama', 'Custom
 
 export const requiresEndpoint = (provider: AgentProviderId): boolean =>
   CUSTOM_ENDPOINT_PROVIDERS.includes(provider);
+
+// ---------------------------------------------------------------------------
+// Agent wizard (template wizard flow)
+// ---------------------------------------------------------------------------
+export const agentWizardSchema = z.object({
+  name: z.string().min(2, 'Agent name is required.').max(80),
+  description: z.string().min(10, 'Add a brief description.').max(500),
+  ownerDepartment: z.string().min(2, 'Department is required.').max(60),
+  provider: z.enum(providerOptions),
+  model: z.string().min(2, 'Model name is required.').max(80),
+  apiKey: z.string().max(200).optional().or(z.literal('')),
+  budget: z.coerce.number().min(0, 'Budget must be zero or greater.').max(100000000),
+  singleTransactionCap: z.coerce
+    .number()
+    .min(0, 'Single-transaction cap must be zero or greater.')
+    .max(10000000),
+});
+
+export type AgentWizardValues = z.infer<typeof agentWizardSchema>;
+
+// ---------------------------------------------------------------------------
+// Agent configuration form (provider/model selector flow)
+// ---------------------------------------------------------------------------
 
 /**
  * `zodResolver` narrows literals through the schema's generic, so the provider

@@ -16,6 +16,9 @@ import { agentStatus } from '@/lib/status';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/lib/format';
 import { PageTransition } from '@/components/ui/motion';
 import { AgentConfigForm } from '@/features/agents/AgentConfigForm';
+import { AgentWizard } from '@/features/agents/AgentWizard';
+import { AgentTemplateWizard } from '@/features/agents/components/AgentTemplateWizard';
+import { AgentTimeline } from '@/features/agents/components/AgentTimeline';
 
 export default function AgentsPage() {
   const agents = useAgents();
@@ -27,6 +30,10 @@ export default function AgentsPage() {
         title="Agents"
         description="Every autonomous operator, the budget it controls, and how close it is to its ceiling."
       />
+
+      <AgentTemplateWizard />
+      <AgentWizard />
+      <AgentTimeline />
 
       <QueryBoundary
         query={agents}
