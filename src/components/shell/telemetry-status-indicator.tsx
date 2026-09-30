@@ -28,6 +28,8 @@ export function TelemetryStatusIndicator({ status }: TelemetryStatusIndicatorPro
     <div
       className="hidden items-center gap-1.5 rounded-button border border-border bg-surface px-2.5 py-1 text-2xs font-medium sm:flex"
       title={`Agent telemetry: ${config.label}`}
+      role="status"
+      aria-label={`Agent telemetry status: ${config.label}`}
       aria-live="polite"
     >
       <span className="relative flex h-1.5 w-1.5">
@@ -38,6 +40,7 @@ export function TelemetryStatusIndicator({ status }: TelemetryStatusIndicatorPro
       </span>
       <Icon className={`h-3.5 w-3.5 ${config.text}`} aria-hidden />
       <span className={`hidden md:inline-block ${config.text}`}>{config.label}</span>
+      <span className="sr-only">Agent telemetry is {config.label.toLowerCase()}</span>
     </div>
   );
 }

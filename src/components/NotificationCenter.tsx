@@ -57,6 +57,10 @@ const FILTER_OPTIONS: { label: string; value: NotificationType | 'all' }[] = [
   { label: 'Policy', value: 'policy_violation' },
 ];
 
+/** Shared, brand-tinted focus ring for notification controls (WCAG AA). */
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
@@ -126,7 +130,10 @@ function NotificationItem({ notification, onMarkRead, onDismiss }: NotificationI
             <button
               type="button"
               onClick={() => onMarkRead(notification.id)}
-              className="grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+              className={cn(
+                'grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+                FOCUS_RING,
+              )}
               aria-label="Mark as read"
               title="Mark as read"
             >
@@ -136,7 +143,10 @@ function NotificationItem({ notification, onMarkRead, onDismiss }: NotificationI
           <button
             type="button"
             onClick={() => onDismiss(notification.id)}
-            className="grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-danger-soft hover:text-danger"
+            className={cn(
+              'grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-danger-soft hover:text-danger opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+              FOCUS_RING,
+            )}
             aria-label="Dismiss notification"
             title="Dismiss"
           >
@@ -213,7 +223,10 @@ export function NotificationCenter() {
         ref={triggerRef}
         type="button"
         onClick={toggle}
-        className="relative grid h-9 w-9 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground"
+        className={cn(
+          'relative grid h-9 w-9 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground',
+          FOCUS_RING,
+        )}
         aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -252,7 +265,10 @@ export function NotificationCenter() {
                   <button
                     type="button"
                     onClick={markAllRead}
-                    className="inline-flex items-center gap-1 rounded-xs px-2 py-1 text-2xs font-medium text-gold transition-colors hover:bg-gold-soft"
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-xs px-2 py-1 text-2xs font-medium text-gold transition-colors hover:bg-gold-soft',
+                      FOCUS_RING,
+                    )}
                     aria-label="Mark all as read"
                   >
                     <CheckCheck className="h-3 w-3" aria-hidden />
@@ -262,7 +278,10 @@ export function NotificationCenter() {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+                  className={cn(
+                    'grid h-6 w-6 place-items-center rounded-xs text-foreground-muted transition-colors hover:bg-surface-secondary hover:text-foreground',
+                    FOCUS_RING,
+                  )}
                   aria-label="Close notifications"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden />
@@ -282,6 +301,7 @@ export function NotificationCenter() {
                     filter.type === opt.value
                       ? 'bg-gold text-gold-foreground'
                       : 'bg-surface-secondary text-foreground-secondary hover:bg-surface-secondary/80',
+                    FOCUS_RING,
                   )}
                   aria-pressed={filter.type === opt.value}
                 >

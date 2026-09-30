@@ -12,6 +12,10 @@ interface MobileNavProps {
   onClose: () => void;
 }
 
+/** Shared, brand-tinted focus ring for drawer controls (WCAG AA). */
+const DRAWER_FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
 /** Slide-in navigation for narrow viewports (mirrors the desktop sidebar). */
 export function MobileNav({ open, onClose }: MobileNavProps) {
   const pathname = usePathname();
@@ -97,7 +101,10 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground"
+            className={cn(
+              'grid h-8 w-8 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground',
+              DRAWER_FOCUS,
+            )}
             aria-label="Close navigation"
           >
             <X className="h-4 w-4" aria-hidden />
@@ -120,6 +127,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
+                      DRAWER_FOCUS,
                       'flex items-center gap-3 rounded-button px-3 py-2 text-sm font-medium transition-colors duration-fast',
                       active
                         ? 'bg-surface-secondary text-foreground'
