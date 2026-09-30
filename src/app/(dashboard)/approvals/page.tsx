@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { ArrowUpRight, Check, Clock, X } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard/page-header';
 import { QueryBoundary } from '@/components/dashboard/query-boundary';
@@ -15,9 +16,11 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { BellIllustration } from '@/components/illustrations';
 import { useProposals } from '@/hooks/use-queries';
 import { useProposalApproval } from '@/hooks/useProposalApproval';
+import { ProposalApprovalConfirmDialog } from '@/features/approvals/components/ProposalApprovalConfirmDialog';
 import { proposalStatus } from '@/lib/status';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
 import { PageTransition } from '@/components/ui/motion';
+import type { LocalApprovalDecision } from '@/stores/proposal-approval-store';
 import type { Proposal } from '@/types/domain';
 
 function ProposalCard({ proposal }: { proposal: Proposal }) {
@@ -28,10 +31,21 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
     requiredApprovals,
     isQuorumMet,
     decision,
-    isProcessing,
-    approve,
-    reject,
   } = useProposalApproval(proposal);
+
+  // Confirmation gate — approve/reject buttons open the dialog first.
+  const [confirmAction, setConfirmAction] = useState<LocalApprovalDecision | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const openConfirmation = (action: LocalApprovalDecision) => {
+    setConfirmAction(action);
+    setConfirmOpen(true);
+  };
+
+  const closeConfirmation = () => {
+    setConfirmOpen(false);
+    setConfirmAction(null);
+  };
 
   return (
     <Card>
@@ -107,8 +121,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
             variant="gold"
             size="sm"
             leftIcon={<Check className="h-4 w-4" />}
-            loading={isProcessing}
-            onClick={() => void approve()}
+            onClick={() => openConfirmation('approved')}
           >
             Approve
           </Button>
@@ -116,13 +129,19 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
             variant="outline"
             size="sm"
             leftIcon={<X className="h-4 w-4" />}
-            loading={isProcessing}
-            onClick={() => void reject()}
+            onClick={() => openConfirmation('rejected')}
           >
             Reject
           </Button>
         </CardFooter>
       )}
+
+      <ProposalApprovalConfirmDialog
+        proposal={proposal}
+        action={confirmAction}
+        open={confirmOpen}
+        onClose={closeConfirmation}
+      />
     </Card>
   );
 }
