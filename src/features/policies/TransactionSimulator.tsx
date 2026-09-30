@@ -1,15 +1,92 @@
 'use client';
 
-import { AlertTriangle, CheckCircle2, UploadCloud } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, GitCompareArrows, UploadCloud } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/input';
-import { usePolicySimulation } from '@/features/policies/usePolicySimulation';
+import {
+  evaluatePolicySimulation,
+  parseXdrPayload,
+  usePolicySimulation,
+} from '@/features/policies/usePolicySimulation';
+import type { PolicyRule } from '@/features/policies/usePolicySimulation';
+import {
+  PolicySimulationDiff,
+  PolicySimulationDiffAnimated,
+  type PolicySimulationDiffResult,
+  type SimulatedOperation,
+  type SimulatedRuleOutcome,
+} from '@/features/policies/PolicySimulationDiff';
+
+/**
+ * Derive the side-by-side diff (proposed vs permitted paths) from the real
+ * policy evaluation across every rule, so the view always mirrors the engine.
+ */
+function buildSimulationDiff(payload: string, rules: PolicyRule[]): PolicySimulationDiffResult {
+  const perRule = rules.map((rule) => ({
+    rule,
+    evaluation: evaluatePolicySimulation(payload, rule),
+  }));
+
+  const violatedRuleIds = perRule
+    .filter((entry) => !entry.evaluation.passed)
+    .map((entry) => entry.rule.id);
+
+  const operations: SimulatedOperation[] = parseXdrPayload(payload).map((op) => ({
+    type: op.type,
+    asset: op.asset,
+    amount: op.amount,
+    source: op.source,
+    status: violatedRuleIds.length === 0 ? 'allowed' : 'blocked',
+    triggeredRuleIds: perRule
+      .filter(
+        (entry) =>
+          !entry.evaluation.passed &&
+          entry.evaluation.parsedOperations.some(
+            (parsed) => parsed.type === op.type && parsed.asset === op.asset,
+          ),
+      )
+      .map((entry) => entry.rule.name),
+  }));
+
+  const ruleOutcomes: SimulatedRuleOutcome[] = perRule.map(({ rule, evaluation }) => {
+    const violation = evaluation.violations[0];
+    return {
+      ruleId: rule.id,
+      ruleName: rule.name,
+      ruleType: rule.type,
+      constraint: rule.description,
+      status: violation ? 'violated' : 'matched',
+      detail: violation ? violation.message : evaluation.summary,
+    };
+  });
+
+  const passed = violatedRuleIds.length === 0;
+  const hasDanger = perRule.some(
+    (entry) => entry.evaluation.violations.some((v) => v.severity === 'danger'),
+  );
+
+  return {
+    passed,
+    outcome: passed ? 'auto_execute' : hasDanger ? 'blocked' : 'requires_approval',
+    operations,
+    rules: ruleOutcomes,
+  };
+}
 
 export function TransactionSimulator() {
   const { rules, activeRuleId, setActiveRuleId, xdr, setXdr, result, parsedOperations } =
     usePolicySimulation();
+
+  // Full diff across every rule — recomputed only when the payload changes.
+  const [diff, setDiff] = useState<PolicySimulationDiffResult | null>(null);
+  const diffInput = useMemo(() => ({ xdr, rules }), [xdr, rules]);
+
+  const runSimulation = () => {
+    setDiff(buildSimulationDiff(diffInput.xdr, diffInput.rules));
+  };
 
   const onUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,8 +139,8 @@ export function TransactionSimulator() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="gold" type="button" onClick={() => setXdr(xdr)}>
-            Evaluate policy
+          <Button variant="gold" type="button" onClick={runSimulation}>
+            Run simulation
           </Button>
 
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground-secondary transition-colors hover:bg-surface-secondary">
@@ -128,6 +205,21 @@ export function TransactionSimulator() {
             </div>
           </div>
         </div>
+
+        {diff && (
+          <section aria-labelledby="simulation-diff-heading" className="space-y-3">
+            <h2
+              id="simulation-diff-heading"
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-foreground-secondary"
+            >
+              <GitCompareArrows className="h-3.5 w-3.5 text-gold" aria-hidden />
+              Simulation diff — proposed vs permitted
+            </h2>
+            <PolicySimulationDiffAnimated resultKey={`${diff.outcome}-${diff.rules.length}-${diff.operations.length}`}>
+              <PolicySimulationDiff result={diff} rules={rules} />
+            </PolicySimulationDiffAnimated>
+          </section>
+        )}
       </CardContent>
     </Card>
   );
