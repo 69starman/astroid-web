@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Sparkles,
   Send,
@@ -9,10 +9,17 @@ import {
   Zap,
   Maximize2,
   Minimize2,
+  Copy,
+  Download,
+  AlertCircle,
+  TrendingDown,
+  type LucideIcon,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
+import { cn } from '@/lib/cn';
 import type { ChatMessage, QuickPromptChip } from './types';
 
 const PRESET_CHIPS: QuickPromptChip[] = [
@@ -35,6 +42,13 @@ const PRESET_CHIPS: QuickPromptChip[] = [
     iconName: 'TrendingDown',
   },
 ];
+
+/** Lucide icon registry for quick-prompt chips (iconName comes from data). */
+const CHIP_ICONS: Record<string, LucideIcon> = {
+  Zap,
+  AlertCircle,
+  TrendingDown,
+};
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
@@ -66,7 +80,68 @@ export function NvidiaAssistantWidget() {
   const [inputText, setInputText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [activeChipId, setActiveChipId] = useState<string | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  /** One-click export: copy the briefing transcript, or download it as text. */
+  const buildTranscript = useCallback(
+    () =>
+      messages
+        .map((msg) => {
+          const prefix = msg.role === 'user' ? 'You' : 'Assistant';
+          const stamp = new Date(msg.timestamp).toLocaleString();
+          const briefing = msg.structuredBriefing
+            ? `\n  Total daily spend: ${msg.structuredBriefing.totalDailySpend} ${msg.structuredBriefing.currency}\n  Active agents: ${msg.structuredBriefing.activeAgentsCount}\n  Top spender: ${msg.structuredBriefing.topSpenderAgent}\n  Low balance wallets: ${msg.structuredBriefing.lowBalanceWalletsCount}\n  Recommendation: ${msg.structuredBriefing.recommendation}`
+            : '';
+          return `[${stamp}] ${prefix}: ${msg.content}${briefing}`;
+        })
+        .join('\n\n'),
+    [messages],
+  );
+
+  const handleCopyTranscript = async () => {
+    if (messages.length === 0) {
+      toast.info('Nothing to export yet — start a conversation first.');
+      return;
+    }
+    const transcript = buildTranscript();
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(transcript);
+      } else {
+        // Fallback for environments where clipboard permissions are blocked.
+        const textarea = document.createElement('textarea');
+        textarea.value = transcript;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      toast.success('Briefing transcript copied to clipboard');
+    } catch {
+      toast.error('Clipboard access was blocked. Use “Download transcript” instead.');
+    }
+  };
+
+  const handleDownloadTranscript = () => {
+    if (messages.length === 0) {
+      toast.info('Nothing to export yet — start a conversation first.');
+      return;
+    }
+    const blob = new Blob([buildTranscript()], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `astroid-briefing-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    toast.success('Briefing transcript downloaded as text file');
+  };
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -169,21 +244,61 @@ export function NvidiaAssistantWidget() {
         </div>
       </div>
 
-      {/* Preset Quick Chips */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border/60 p-3 bg-surface/80">
-        <span className="text-3xs uppercase tracking-wider font-bold text-foreground-muted">Quick Prompts:</span>
-        {PRESET_CHIPS.map((chip) => (
-          <button
-            key={chip.id}
-            type="button"
-            onClick={() => handleSendMessage(chip.promptText)}
-            disabled={isStreaming}
-            className="flex items-center gap-1.5 rounded-button border border-border bg-surface-secondary px-2.5 py-1 text-2xs text-foreground-secondary hover:border-gold hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            <Zap className="h-3 w-3 text-gold" />
-            <span>{chip.label}</span>
-          </button>
-        ))}
+      {/* Export toolbar + Preset Quick Chips */}
+      <div className="space-y-2 border-b border-border/60 p-3 bg-surface/80">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-3xs uppercase tracking-wider font-bold text-foreground-muted">
+            Quick Prompts:
+          </span>
+          <div className="flex items-center gap-1.5" role="group" aria-label="Export briefing transcript">
+            <button
+              type="button"
+              onClick={handleCopyTranscript}
+              className="flex items-center gap-1 rounded-button border border-border bg-surface-secondary px-2 py-1 text-2xs text-foreground-secondary transition-colors hover:border-gold hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title="Copy chat history to clipboard"
+            >
+              <Copy className="h-3 w-3" aria-hidden />
+              <span>Copy</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadTranscript}
+              className="flex items-center gap-1 rounded-button border border-border bg-surface-secondary px-2 py-1 text-2xs text-foreground-secondary transition-colors hover:border-gold hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title="Download chat history as .txt"
+            >
+              <Download className="h-3 w-3" aria-hidden />
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {PRESET_CHIPS.map((chip) => {
+            const Icon = CHIP_ICONS[chip.iconName] ?? Zap;
+            const isActive = activeChipId === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => handleSendMessage(chip.promptText)}
+                onMouseEnter={() => setActiveChipId(chip.id)}
+                onMouseLeave={() => setActiveChipId(null)}
+                onFocus={() => setActiveChipId(chip.id)}
+                onBlur={() => setActiveChipId(null)}
+                disabled={isStreaming}
+                aria-pressed={isActive}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-button border px-2.5 py-1 text-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-50',
+                  isActive
+                    ? 'border-gold bg-gold-soft text-foreground'
+                    : 'border-border bg-surface-secondary text-foreground-secondary hover:border-gold hover:text-foreground',
+                )}
+              >
+                <Icon className="h-3 w-3 text-gold" aria-hidden />
+                <span>{chip.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Chat Messages Stream */}
