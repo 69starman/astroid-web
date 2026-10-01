@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/cn';
 import { Button } from './button';
@@ -23,7 +23,11 @@ const sizeClass = {
   lg: 'max-w-2xl',
 } as const;
 
-/** Accessible modal dialog: portal, focus trap, Escape + overlay dismissal. */
+/**
+ * Accessible modal dialog: portal, focus trap, Escape + overlay dismissal.
+ * The panel is exposed as `role="dialog" aria-modal="true"` with
+ * `aria-labelledby`/`aria-describedby` pointing at the title/description.
+ */
 export function Dialog({
   open,
   onClose,
@@ -36,12 +40,22 @@ export function Dialog({
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const mounted = useRef(false);
+  const titleId = useId();
+  const descriptionId = useId();
 
+  // Track mount separately from `open` so the portal target exists before the
+  // first render that needs it (React portals require an existing DOM node).
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
     };
+  }, []);
+
+  // Re-render once mounted so an open dialog actually portals on the client.
+  const [, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -66,15 +80,18 @@ export function Dialog({
       }
     };
     document.addEventListener('keydown', onKey);
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     panelRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus?.();
     };
   }, [open, onClose]);
 
+  // `isClient` guards the SSR pass; `mounted` must already be true when `open`
+  // is first set because the component is rendered inside a client tree.
   if (!open || !mounted.current) return null;
 
   return createPortal(
@@ -88,7 +105,9 @@ export function Dialog({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={title ? titleId : undefined}
+        aria-describedby={description ? descriptionId : undefined}
+        aria-label={title ? undefined : 'Dialog'}
         tabIndex={-1}
         className={cn(
           'relative z-10 w-full animate-fade-up rounded-dialog border border-border bg-surface shadow-soft-3 focus:outline-none',
@@ -99,12 +118,14 @@ export function Dialog({
         <div className="flex items-start justify-between gap-4 p-6 pb-2">
           <div className="flex flex-col gap-1">
             {title && (
-              <h2 className="font-display text-xl font-semibold tracking-tight">
+              <h2 id={titleId} className="font-display text-xl font-semibold tracking-tight">
                 {title}
               </h2>
             )}
             {description && (
-              <p className="text-xs text-foreground-secondary">{description}</p>
+              <p id={descriptionId} className="text-xs text-foreground-secondary">
+                {description}
+              </p>
             )}
           </div>
           <Button
@@ -113,7 +134,7 @@ export function Dialog({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden />
           </Button>
         </div>
         <div className="p-6 pt-2">{children}</div>

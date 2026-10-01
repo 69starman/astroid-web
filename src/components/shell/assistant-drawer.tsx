@@ -15,6 +15,10 @@ const defaultSuggestions = [
   { label: 'Stellar transfer explainer', prompt: 'Explain the most recent high-value Stellar transfer in plain English.' },
 ];
 
+/** Shared, brand-tinted focus ring for drawer controls (WCAG AA). */
+const DRAWER_FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
 
 /**
  * Slide-over AI assistant. Seeds from the mock conversation and the daily
@@ -149,7 +153,10 @@ export function AssistantDrawer() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="grid h-8 w-8 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground"
+              className={cn(
+                'grid h-8 w-8 place-items-center rounded-button text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground',
+                DRAWER_FOCUS,
+              )}
               aria-label="Close assistant"
             >
               <X className="h-4 w-4" aria-hidden />
@@ -199,7 +206,10 @@ export function AssistantDrawer() {
                       key={s.label}
                       type="button"
                       onClick={() => send(s.prompt)}
-                      className="group flex items-center justify-between gap-2 rounded-button border border-border bg-surface p-3 text-left text-xs text-foreground-secondary transition-all duration-fast hover:border-gold hover:text-foreground"
+                      className={cn(
+                        'group flex items-center justify-between gap-2 rounded-button border border-border bg-surface p-3 text-left text-xs text-foreground-secondary transition-all duration-fast hover:border-gold hover:text-foreground',
+                        DRAWER_FOCUS,
+                      )}
                     >
                       <span className="truncate">{s.label}</span>
                       <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
@@ -234,7 +244,10 @@ export function AssistantDrawer() {
               <button
                 type="submit"
                 disabled={!draft.trim()}
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-button bg-accent-gradient text-background-secondary font-semibold transition-opacity duration-fast disabled:opacity-40"
+                className={cn(
+                  'grid h-8 w-8 shrink-0 place-items-center rounded-button bg-accent-gradient text-background-secondary font-semibold transition-opacity duration-fast disabled:opacity-40',
+                  DRAWER_FOCUS,
+                )}
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" aria-hidden />

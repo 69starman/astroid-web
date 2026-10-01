@@ -67,15 +67,17 @@ function TopbarIndicator({ currentUser }: { currentUser: string }) {
         onClick={handleToggle}
         className={cn(
           'relative grid h-9 w-9 place-items-center rounded-button transition-all duration-fast',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           status === 'frozen'
             ? 'bg-danger/10 text-danger animate-pulse hover:bg-danger/20'
             : 'text-foreground-secondary hover:bg-surface-secondary hover:text-foreground',
         )}
         aria-label={
           status === 'frozen'
-            ? 'Circuit breaker is active — click to restore'
-            : 'Circuit breaker is operational — click to freeze all agents'
+            ? 'Circuit breaker is active — open panel to restore agent transactions'
+            : 'Circuit breaker is operational — open panel to freeze all agents'
         }
+        aria-haspopup="dialog"
       >
         {status === 'frozen' ? (
           <ShieldOff className="h-[18px] w-[18px]" aria-hidden />

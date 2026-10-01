@@ -17,6 +17,10 @@ import { cn } from '@/lib/cn';
  * plus AI assistant sit at either end. Narrow viewports fall back to the slide-in
  * drawer (see {@link MobileNav}); the dock is hidden below `lg`.
  */
+/** Shared, brand-tinted focus ring for every dock control (WCAG AA). */
+const DOCK_FOCUS =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
 export function CommandDock() {
   const pathname = usePathname();
   const openCommand = useCommandStore((s) => s.setOpen);
@@ -34,6 +38,7 @@ export function CommandDock() {
           label="Search"
           hint="⌘K"
           icon={<Search className="h-[18px] w-[18px]" aria-hidden />}
+          focusRing={DOCK_FOCUS}
         />
 
         <Divider />
@@ -52,6 +57,7 @@ export function CommandDock() {
                   aria-current={active ? 'page' : undefined}
                   title={item.label}
                   className={cn(
+                    DOCK_FOCUS,
                     'group relative flex h-11 items-center rounded-full px-3 text-sm font-medium transition-colors duration-fast',
                     active
                       ? 'text-foreground'
@@ -103,6 +109,7 @@ export function CommandDock() {
           onClick={() => openAssistant(true)}
           label="AI assistant"
           icon={<Sparkles className="h-[18px] w-[18px] text-gold" aria-hidden />}
+          focusRing={DOCK_FOCUS}
         />
       </div>
     </nav>
@@ -118,11 +125,13 @@ function DockButton({
   label,
   hint,
   icon,
+  focusRing,
 }: {
   onClick: () => void;
   label: string;
   hint?: string;
   icon: React.ReactNode;
+  focusRing?: string;
 }) {
   return (
     <button
@@ -130,7 +139,10 @@ function DockButton({
       onClick={onClick}
       aria-label={label}
       title={hint ? `${label} (${hint})` : label}
-      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground"
+      className={cn(
+        'grid h-11 w-11 shrink-0 place-items-center rounded-full text-foreground-secondary transition-colors duration-fast hover:bg-surface-secondary hover:text-foreground',
+        focusRing,
+      )}
     >
       {icon}
     </button>

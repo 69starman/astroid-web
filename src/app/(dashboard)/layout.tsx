@@ -33,9 +33,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         hydrated && compact && 'text-[13px]',
       )}
     >
+      {/* Keyboard shortcut past the shell chrome — first tab stop on every page. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[110] focus:rounded-button focus:border focus:border-border focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-soft-2"
+      >
+        Skip to main content
+      </a>
       <Topbar navOpen={navOpen} onOpenNav={() => setNavOpen(true)} />
 
-      <main id="main-content" className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
         <div className="pb-28 lg:pb-28 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}
         </div>
